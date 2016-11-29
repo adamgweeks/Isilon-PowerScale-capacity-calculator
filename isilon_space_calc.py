@@ -1,0 +1,254 @@
+
+# Python script to calc Isilon file space usage
+# written by Adam.Weeks@dell.com
+# unofficial and NOT supported by Dell Technologies/EMC/Isilon!
+
+# example useage: python isilon_space_calc.py /Users/user1/Documents/ -s 9 -p N+2 -u GB
+ 
+from datetime import datetime	# get script start time
+startTime = datetime.now()		# script timed as this could take a while!	
+
+#take in cmd line arguments
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument("directory", help="source directory (will scan this dir and all subdirs from this point)")
+parser.add_argument("--node_pool_size","-s", help="the node pool size (number of nodes)",type=int)
+parser.add_argument("--protection","-p", help="data protection level, defaults to: N+2:1",default="N+2:1")
+parser.add_argument("--units","-u", help="output data units (KB,MB,TB,PB), default=MB",default="MB")
+#parser.add_argument("--verbose","-v", help="show individual file sizes",action="store_true")
+#if a file-by-file output table/CSV etc would be useful email me.
+
+
+#progress bar function
+def progress(end_val, bar_length,prog):	
+        percent = float(prog) / end_val
+        hashes = '#' * int(round(percent * bar_length))
+        spaces = ' ' * (bar_length - len(hashes))
+        if(prog==end_val):
+        	    sys.stdout.write("\rPercent: [{0}] Done!".format(hashes + spaces, int(round(percent * 100))));
+        else:
+        		sys.stdout.write("\rPercent: [{0}] {1}%".format(hashes + spaces, int(round(percent * 100))));
+        sys.stdout.flush();
+        
+#setup the vars needed for calculations        
+args = parser.parse_args()
+dirname=args.directory
+protection_string=args.protection
+node_pool_size=args.node_pool_size
+data_units=args.units
+
+#translate output units into divisible number (from bytes to x units)
+data_units=data_units.upper()
+if data_units=="KB":
+    data_divider=1024;
+elif data_units=="MB":
+    data_divider=1024*1024;
+elif data_units=="GB":
+    data_divider=1024*1024*1024;
+elif data_units=="TB":
+    data_divider=1024*1024*1024*1024;
+elif data_units=="PB":
+    data_divider=1024*1024*1024*1024*1024;                 
+else :
+    print "Data units size not recognised"
+    exit();
+    
+    
+#translate requested protection string into meaning for script
+protection_string=protection_string.lower()
+if protection_string=="n+1":
+    requested_protection=1
+    stripe_requested=True;
+elif protection_string=="n+2":
+    requested_protection=2
+    stripe_requested=True;
+elif protection_string=="n+3":
+    requested_protection=3
+    stripe_requested=True;
+elif protection_string=="n+4":
+    requested_protection=4
+    stripe_requested=True;
+elif protection_string=="n+2:1":
+    requested_protection=2
+    stripe_requested=True
+    node_pool_size=(node_pool_size * 2); 
+elif protection_string=="n+3:1":
+    requested_protection=3
+    stripe_requested=True
+    node_pool_size=(node_pool_size * 3);
+elif protection_string=="n+4:1":
+    requested_protection=4
+    stripe_requested=True
+    node_pool_size=(node_pool_size * 4);
+elif protection_string=="n+3:11":
+    requested_protection=3
+    stripe_requested=True
+    node_pool_size=(node_pool_size * 2);
+elif protection_string=="n+4:2":
+    requested_protection=4
+    stripe_requested=True
+    node_pool_size=(node_pool_size * 2);                       
+elif protection_string=="2x":
+    requested_protection=2
+    stripe_requested=False;
+elif protection_string=="3x":
+    requested_protection=3
+    stripe_requested=False;
+elif protection_string=="4x":
+    requested_protection=4
+    stripe_requested=False;
+elif protection_string=="5x":
+    requested_protection=5
+    stripe_requested=False;
+elif protection_string=="6x":
+    requested_protection=6
+    stripe_requested=False;
+elif protection_string=="7x":
+    requested_protection=7
+    stripe_requested=False;
+elif protection_string=="8x":
+    requested_protection=8
+    stripe_requested=False;
+else: 
+    print "unrecognised protection type"  
+    exit(); 
+
+#setup vars used later in script
+total=0
+filesizes=[]
+global total_size
+total_size=0
+global total_original_size
+total_original_size=0
+global t_total
+t_total=0
+
+#do some sanity checks on given arguments
+	
+#if the node pool size is greater than the max stripe size, limit it TO the maximum stripe size
+if (node_pool_size - requested_protection)>16:
+    node_pool_size=(16 + requested_protection);	
+
+#check striping will work with the node pool size given    
+if stripe_requested==True:    
+    valid_min_size=(requested_protection+1)+requested_protection #could have used easier logic (2 x RP + 1) but wanted to match more to the human logic used (Must be enough nodes for more DUs than FECs).
+    if node_pool_size<valid_min_size:
+        print "Node pool is too small for requested protection to work!"
+        exit();
+
+        
+import os
+import sys
+
+
+i=-1	#ready for progress function
+
+polear=['/','|','\\','-']	#ready for showing the metadata read is still working!
+polepos=0
+print "Reading metadata..."
+metaTime = datetime.now() #timing how long the metadata read took
+files_to_process=0# for progress indicator, so we know the total number of files later
+for root, _, files in os.walk(dirname):	#go and retrieve a list of all the files in the given DIR
+    for filename in files:
+		polepos=polepos+1
+		if (polepos>3):
+			polepos=0
+		pole=polear[polepos]
+		sys.stdout.write("\r{0}".format(pole))
+		sys.stdout.flush()
+		filepath = os.path.join(root, filename)
+		if os.path.isfile(filepath):	# check this is a file (i.e. not a link)
+			files_to_process=files_to_process+1 # used later for progress bar
+			filesizes.append(os.path.getsize(filepath)) # add to file size for this file to the list 
+       
+sys.stdout.write("\r"); # clear line used for the 'moving line'
+sys.stdout.flush()
+print "Read metadata for ",files_to_process," files in (H:M:S:ms):",datetime.now() - startTime # show how long this took and how many files we have (really just for reference)          
+i=0 #for progress bar		
+
+print ""
+print "Calculating filesizes..."
+calcTime = datetime.now() # for timing how long the processing takes 
+        
+# go through each file in the list and we'll work out how much protection detail Isilon would add (for given cluster size and protection setting used)       
+for file_size in filesizes: 
+	i=i+1
+	progress(files_to_process,40,i)# show progress bar
+	total_original_size=file_size+total_original_size # totting up the total size of the original files
+    
+	if file_size>0:
+		remainder=0       
+	# round up to ceiling 8kb (Isilon uses an 8KB filesystem block size, so we need to round up)
+		rounded_file_size=int(8 * round(float(file_size)/8))
+	if(rounded_file_size<file_size):
+		rounded_file_size=rounded_file_size + 8;
+
+# if mirroring protection was requested we simply need to multiply the rounded size (no need for complex stripe calc
+	if stripe_requested==False:
+			file_size=rounded_file_size * requested_protection
+			remainder_size=0;
+# if striping was requested we have to do a more complex calc			
+	else:
+			#check if the file is 'small' (i.e. less than, or equal to 128KB), if it is small it will be mirrored
+			if rounded_file_size<=128:
+				T_requested_protection = requested_protection + 1
+				file_size=rounded_file_size * T_requested_protection
+				remainder_size=0;
+			
+		# as file is larger than 128KB (and we've already checked for a mirroring request), we'll have to stripe the data		
+	
+			DU_count=float(rounded_file_size)/128 # work out how many DUs (Data Units) will be needed
+
+	#check if DU_count is integer (if not we have a partial DU)
+			if (float(DU_count)).is_integer():
+				overspill=0 # overspill is how much we need to remove from the end of the stripe, if it divides perfectly there will be no overspill to remove
+			else:
+			#we have a partial DU
+				DU_count=int(DU_count)
+				overspill=128-(rounded_file_size - (int(DU_count)*128)) # out last DU will not really be complete, so how much do we remove?  (the overspill value)
+				remainder_size=0;
+	
+			actual_stripe_size=node_pool_size - requested_protection # get the stripe size (for DUs) available
+			no_stripes=DU_count/float(actual_stripe_size)# how many stripes do we need (not necessarily an integer result)
+			if (no_stripes<=1) and (no_stripes>0):no_stripes=1; # we have to have at least 1 stripe (this avoids a divide by zero error too)
+			rounded_stripes=int(no_stripes) # round up the number of stripes by converting to an integer (we will handle the 'overspill' of writing a full stripe later)
+			full_stripes_size=((actual_stripe_size * rounded_stripes) + (requested_protection * rounded_stripes)) * 128 # how would the stripes be written (taking into account the node pool size and protection
+			# check for overspill
+			if(overspill>0):
+				remainder_size=0;
+			else:
+				remainder_size=rounded_file_size - ((actual_stripe_size * rounded_stripes) * 128);# data left over (from partia)
+
+	#calculate the 'remainder' stripe that needs to be written
+	#do we need to mirror the remainder?
+			if remainder_size<=128:
+				T_requested_protection = requested_protection + 1
+				remainder_size=(remainder_size * T_requested_protection) - overspill
+				file_size=remainder_size + full_stripes_size;
+				
+			else:
+	#remainder is big enough to form final stripe
+				remainder_size=((remainder_size + (requested_protection * 128)) - overspill); # !wrong?!
+				
+				
+	t_total=total_size
+	total_size=(t_total+file_size)
+	t_total=total_size;
+	
+total_size=total_size/data_divider;
+global totemp	
+totemp=total_original_size/data_divider;
+
+# calc percentage difference
+diff=((total_size / float(totemp))*100)-100
+diff=round(diff,2) # (rounded to 2 decimal places for ease of reading)
+
+#show the results of all this (timings are more for reference as this could take hours/days!)
+print ""
+print ""	
+print "Original data size is: ",totemp,data_units
+print "Isilon size is       : ", total_size,data_units;
+print "A protection overhead of ",diff,"% - percentage of additional protection data"
+print ""
+print "Calculation time (H:M:S:ms):  ",datetime.now() - calcTime  
+print "Total running time (H:M:S:ms):",datetime.now() - startTime  
