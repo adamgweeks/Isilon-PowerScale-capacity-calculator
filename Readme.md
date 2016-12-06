@@ -10,11 +10,12 @@ and therefore the raw capacity needed;
 * What is the protection type? (2x,3x,4x,5x,6x,7x,8x,n+1,n+2,n+3,n+4,n+2:1,n+3:1,n+4:1,n+3:11,n+4:2)
 * What is the size of the node pool? (group of identical nodes)
 * how big is each individual file?
+* How many files/directories are there? (each needs metadata)
 
 Because the files are processed individually we'd need to use this information to calculate the resulting size of each file.
 
 This script simply needs to be run on the host that can see the data to be migrated.  You supply it with the details needed to
-calculate the eventual capacity and it will run through each file and calculate the resulting Isilon capacity.
+calculate the eventual capacity and it will run through each file and calculate the resulting Isilon capacity (including metadata).
 
 ## Usage:
 
@@ -28,6 +29,16 @@ Then run the script using the following syntax:
 for example:
 
 `python isilon_space_calc.py /Users/weeksa/Documents/ -s 9 -p n+2:1 -u GB`
+
+Additional options:
+
+`[-v (for verbose file list printed) | -c (for csv formatted verbose output)]`
+
+verbose mode will give you a list of individual files on screeen, CSV is meant for creating a .CSV file (can be opened in a spreadsheet for ease of reading)
+note with CSV output you have to direct the output of the command into a file, like so:
+
+`python isilon_space_calc.py <source directory> -s <size of nodepool> -p <protection type> -u <data measurement units> -c > myfiles.csv`
+
 
 Output:
 ```
@@ -45,6 +56,9 @@ Calculation time (H:M:S:ms):   0:00:00.147969
 Total running time (H:M:S:ms): 0:00:00.594736
 ```
 
+## As this script is still in testing...
+**_PLEASE UPDATE THE ABOVE WIKI WITH ANY ACCURACY TESTS/REPORTS! _**
+
 ## Working test comparison
 
 From a real Isilon cluster Node pool was 3 X200s.
@@ -57,10 +71,7 @@ From a real Isilon cluster Node pool was 3 X200s.
 -- Changes the protection level of the data on the fly
 
 ### On Isilon test cluster:
-
 ![alt tag](./screenshot.png)
-
-
 ### Using script:
 
 ```
@@ -147,6 +158,6 @@ Total running time (H:M:S:ms): 0:00:00.030701
 Please note that this script is **completely unsupported by Dell Technologies/EMC/Isilon** and should be considered as in a beta state/
 experimental.  Although written in good faith there are of course **no guarantees** the results will be accurate.
 
-If you discover any issues, have any feature suggestions or wish to report the level of accuracy you saw please contact me at 
+If you discover any issues, have any feature suggestions please contact me at 
 Adam.Weeks@dell.com
   
