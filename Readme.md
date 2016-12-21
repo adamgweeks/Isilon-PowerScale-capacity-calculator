@@ -59,6 +59,8 @@ Total running time (H:M:S:ms): 0:00:00.594736
 ## As this script is still in testing...
 **_PLEASE UPDATE THE ABOVE WIKI WITH ANY ACCURACY TESTS/REPORTS! _**
 
+For testing results see the [results_comparison_table.md](results_comparison_table.md) file; it does show that there are differences of a few percent in my testing thus far. 
+
 ## Working test comparison
 
 From a real Isilon cluster Node pool was 3 X200s.
@@ -76,7 +78,7 @@ From a real Isilon cluster Node pool was 3 X200s.
 
 ```
 
-Adams-MacBook-Pro:Documents user1$ python isilon_space_calc.py /Users/user1/Desktop/isilon\ script\ test\ dir/ -s 3 -p n+1 -u MB
+Linux:Documents user1$ python isilon_space_calc.py /Users/user1/Desktop/isilon\ script\ test\ dir/ -s 3 -p n+1 -u MB
 Reading metadata...
 Read metadata for  158  files in (H:M:S:ms): 0:00:00.025643
 
@@ -89,7 +91,7 @@ A protection overhead of  53.42 % - percentage of additional protection data
 
 Calculation time (H:M:S:ms):   0:00:00.002213
 Total running time (H:M:S:ms): 0:00:00.027898
-Adams-MacBook-Pro:Documents user1$ python isilon_space_calc.py /Users/user1/Desktop/isilon\ script\ test\ dir/ -s 3 -p n+2:1 -u MB
+Linux:Documents user1$ python isilon_space_calc.py /Users/user1/Desktop/isilon\ script\ test\ dir/ -s 3 -p n+2:1 -u MB
 Reading metadata...
 Read metadata for  158  files in (H:M:S:ms): 0:00:00.030907
 
@@ -102,7 +104,7 @@ A protection overhead of  55.27 % - percentage of additional protection data
 
 Calculation time (H:M:S:ms):   0:00:00.002148
 Total running time (H:M:S:ms): 0:00:00.033103
-Adams-MacBook-Pro:Documents user1$ python isilon_space_calc.py /Users/user1/Desktop/isilon\ script\ test\ dir/ -s 3 -p n+3:1 -u MB
+Linux:Documents user1$ python isilon_space_calc.py /Users/user1/Desktop/isilon\ script\ test\ dir/ -s 3 -p n+3:1 -u MB
 Reading metadata...
 Read metadata for  158  files in (H:M:S:ms): 0:00:00.035157
 
@@ -115,7 +117,7 @@ A protection overhead of  58.45 % - percentage of additional protection data
 
 Calculation time (H:M:S:ms):   0:00:00.002990
 Total running time (H:M:S:ms): 0:00:00.038216
-Adams-MacBook-Pro:Documents user1$ python isilon_space_calc.py /Users/user1/Desktop/isilon\ script\ test\ dir/ -s 3 -p n+4:1 -u MB
+Linux:Documents user1$ python isilon_space_calc.py /Users/user1/Desktop/isilon\ script\ test\ dir/ -s 3 -p n+4:1 -u MB
 Reading metadata...
 Read metadata for  158  files in (H:M:S:ms): 0:00:00.024812
 
@@ -128,7 +130,7 @@ A protection overhead of  60.46 % - percentage of additional protection data
 
 Calculation time (H:M:S:ms):   0:00:00.002147
 Total running time (H:M:S:ms): 0:00:00.027001
-Adams-MacBook-Pro:Documents user1$ python isilon_space_calc.py /Users/user1/Desktop/isilon\ script\ test\ dir/ -s 3 -p 2x -u MB
+Linux:Documents user1$ python isilon_space_calc.py /Users/user1/Desktop/isilon\ script\ test\ dir/ -s 3 -p 2x -u MB
 Reading metadata...
 Read metadata for  158  files in (H:M:S:ms): 0:00:00.029575
 
@@ -141,7 +143,7 @@ A protection overhead of  108.02 % - percentage of additional protection data
 
 Calculation time (H:M:S:ms):   0:00:00.001908
 Total running time (H:M:S:ms): 0:00:00.031524
-Adams-MacBook-Pro:Documents user1$ python isilon_space_calc.py /Users/user1/Desktop/isilon\ script\ test\ dir/ -s 3 -p 3x -u MB
+Linux:Documents user1$ python isilon_space_calc.py /Users/user1/Desktop/isilon\ script\ test\ dir/ -s 3 -p 3x -u MB
 Reading metadata...
 Read metadata for  158  files in (H:M:S:ms): 0:00:00.028768
 

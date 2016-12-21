@@ -148,7 +148,8 @@ i=0	#ready for progress function
 
 polear=['/','|','\\','-']	#ready for showing the metadata read is still working!
 polepos=0
-print "Reading metadata..."
+if csv==False:
+	print "Reading metadata..."
 metaTime = datetime.now() #timing how long the metadata read took
 files_to_process=0# for progress indicator, so we know the total number of files later
 dirs_to_process=0 # for counting inodes (to indicate metadata size)
@@ -196,12 +197,18 @@ print "Metdata size for Isilon will be:",metadata_size,data_units
 i=0 #for progress bar		
 
 print ""
-print "Calculating filesizes..."
+if csv==False:
+	print "Calculating filesizes..."
 if verbose==True:
 	if csv==False:
 		print ""
 		print "Filename					| Original size (KB)  |  Isilon size (KB)"
 	else:
+		print ""
+		print ""
+		print "Isilon space calculator report for ",dirname,"with ", node_pool_size ," nodes using ",protection_string," protection"
+		print ""
+		print ""
 		print "Filename,Original size (KB),Isilon size(KB)"
 		
 calcTime = datetime.now() # for timing how long the processing takes 
@@ -219,57 +226,57 @@ for file_size in filesizes:
 		remainder=0       
 	# round up to ceiling 8kb (Isilon uses an 8KB filesystem block size, so we need to round up)
 		rounded_file_size=int(8 * round(float(file_size)/8))
-	if(rounded_file_size<file_size):
-		rounded_file_size=rounded_file_size + 8
+		if(rounded_file_size<file_size):
+			rounded_file_size=rounded_file_size + 8
 
-# if mirroring protection was requested we simply need to multiply the rounded size (no need for complex stripe calc
-	if stripe_requested==False:
-			file_size=rounded_file_size * requested_protection
-			remainder_size=0
-# if striping was requested we have to do a more complex calc			
-	else:
-			#check if the file is 'small' (i.e. less than, or equal to 128KB), if it is small it will be mirrored
-			if rounded_file_size<=128:
-				T_requested_protection = requested_protection + 1
-				file_size=rounded_file_size * T_requested_protection
+	# if mirroring protection was requested we simply need to multiply the rounded size (no need for complex stripe calc
+		if stripe_requested==False:
+				file_size=rounded_file_size * requested_protection
 				remainder_size=0
-				#print "small:",rounded_file_size
-			else:
+	# if striping was requested we have to do a more complex calc			
+		else:
+				#check if the file is 'small' (i.e. less than, or equal to 128KB), if it is small it will be mirrored
+				if rounded_file_size<=128:
+					T_requested_protection = requested_protection + 1
+					file_size=rounded_file_size * T_requested_protection
+					remainder_size=0
+					#print "small:",rounded_file_size
+				else:
 			
-			# as file is larger than 128KB (and we've already checked for a mirroring request), we'll have to stripe the data		
+				# as file is larger than 128KB (and we've already checked for a mirroring request), we'll have to stripe the data		
 										
-					DU_count=float(rounded_file_size)/128 # work out how many DUs (Data Units) will be needed
+						DU_count=float(rounded_file_size)/128 # work out how many DUs (Data Units) will be needed
 
-			#check if DU_count is integer (if not we have a partial DU)
-					if (float(DU_count)).is_integer():
-						overspill=0 # overspill is how much we need to remove from the end of the stripe, if it divides perfectly there will be no overspill to remove
-					else:
-					#we have a partial DU
-						DU_count=int(DU_count)
-						overspill=128-(rounded_file_size - (int(DU_count)*128)) # out last DU will not really be complete, so how much do we remove?  (the overspill value)
-						remainder_size=0
+				#check if DU_count is integer (if not we have a partial DU)
+						if (float(DU_count)).is_integer():
+							overspill=0 # overspill is how much we need to remove from the end of the stripe, if it divides perfectly there will be no overspill to remove
+						else:
+						#we have a partial DU
+							DU_count=int(DU_count)
+							overspill=128-(rounded_file_size - (int(DU_count)*128)) # out last DU will not really be complete, so how much do we remove?  (the overspill value)
+							remainder_size=0
 	
-					actual_stripe_size=node_pool_size - requested_protection # get the stripe size (for DUs) available
-					no_stripes=DU_count/float(actual_stripe_size)# how many stripes do we need (not necessarily an integer result)
-					if (no_stripes<=1) and (no_stripes>0):no_stripes=1 # we have to have at least 1 stripe (this avoids a divide by zero error too)
-					rounded_stripes=int(no_stripes) # round up the number of stripes by converting to an integer (we will handle the 'overspill' of writing a full stripe later)
-					full_stripes_size=((actual_stripe_size * rounded_stripes) + (requested_protection * rounded_stripes)) * 128 # how would the stripes be written (taking into account the node pool size and protection
-					# check for overspill
-					if(overspill>0):
-						remainder_size=0
-					else:
-						remainder_size=rounded_file_size - ((actual_stripe_size * rounded_stripes) * 128)# data left over (from partia)
+						actual_stripe_size=node_pool_size - requested_protection # get the stripe size (for DUs) available
+						no_stripes=DU_count/float(actual_stripe_size)# how many stripes do we need (not necessarily an integer result)
+						if (no_stripes<=1) and (no_stripes>0):no_stripes=1 # we have to have at least 1 stripe (this avoids a divide by zero error too)
+						rounded_stripes=int(no_stripes) # round up the number of stripes by converting to an integer (we will handle the 'overspill' of writing a full stripe later)
+						full_stripes_size=((actual_stripe_size * rounded_stripes) + (requested_protection * rounded_stripes)) * 128 # how would the stripes be written (taking into account the node pool size and protection
+						# check for overspill
+						if(overspill>0):
+							remainder_size=0
+						else:
+							remainder_size=rounded_file_size - ((actual_stripe_size * rounded_stripes) * 128)# data left over (from partia)
 
-			#calculate the 'remainder' stripe that needs to be written
-			#do we need to mirror the remainder?
-					if remainder_size<=128:
-						T_requested_protection = requested_protection + 1
-						remainder_size=(remainder_size * T_requested_protection) - overspill
-						file_size=remainder_size + full_stripes_size
+				#calculate the 'remainder' stripe that needs to be written
+				#do we need to mirror the remainder?
+						if remainder_size<=128:
+							T_requested_protection = requested_protection + 1
+							remainder_size=(remainder_size * T_requested_protection) - overspill
+							file_size=remainder_size + full_stripes_size
 				
-					else:
-			#remainder is big enough to form final stripe
-						remainder_size=((remainder_size + (requested_protection * 128)) - overspill)
+						else:
+				#remainder is big enough to form final stripe
+							remainder_size=((remainder_size + (requested_protection * 128)) - overspill)
 				
 	if verbose==True:
 		filename=filenames[(i-1)]
@@ -285,7 +292,6 @@ for file_size in filesizes:
 	t_total=total_size
 	total_size=(t_total+file_size)
 	t_total=total_size
-	file_size=0
 	
 # calc percentage difference
 diff=((total_size / float(total_original_size))*100)-100
