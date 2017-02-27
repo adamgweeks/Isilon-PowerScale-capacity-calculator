@@ -1,4 +1,4 @@
-# Isilon Space calculator
+# Isilon Capacity calculator
 
 Isilon has a unique approach to data protection protecting individual files, rather than protecting complete disks (as in RAID).
 
@@ -24,20 +24,20 @@ Firstly you need the Python shell to run the script.  Python is available for ma
 
 Then run the script using the following syntax:
 
-`python isilon_space_calc.py <source directory> -s <size of nodepool> -p <protection type> -u <data measurement units>`
+`python isilon_capacity_calc.py <source directory> -s <size of nodepool> -p <protection type>`
 
 for example:
 
-`python isilon_space_calc.py /Users/weeksa/Documents/ -s 9 -p n+2:1 -u GB`
+`python isilon_capacity_calc.py /Users/weeksa/Documents/ -s 9 -p n+2:1`
 
 Additional options:
 
-`[-v (for verbose file list printed) | -c (for csv formatted verbose output)]`
+`[-v (for verbose file list printed) | -c (for csv formatted verbose output) | -u output data units (KB,MB,TB,PB,H), default=H (H=human/auto sizing)]`
 
 verbose mode will give you a list of individual files on screeen, CSV is meant for creating a .CSV file (can be opened in a spreadsheet for ease of reading)
 note with CSV output you have to direct the output of the command into a file, like so:
 
-`python isilon_space_calc.py <source directory> -s <size of nodepool> -p <protection type> -u <data measurement units> -c > myfiles.csv`
+`python isilon_capacity_calc.py <source directory> -s <size of nodepool> -p <protection type> -u <data measurement units> -c > myfiles.csv`
 
 
 Output:
@@ -78,7 +78,7 @@ From a real Isilon cluster Node pool was 3 X200s.
 
 ```
 
-Linux:Documents user1$ python isilon_space_calc.py /Users/user1/Desktop/isilon\ script\ test\ dir/ -s 3 -p n+1 -u MB
+Linux:Documents user1$ python isilon_capacity_calc.py /Users/user1/Desktop/isilon\ script\ test\ dir/ -s 3 -p n+1 -u MB
 Reading metadata...
 Read metadata for  158  files in (H:M:S:ms): 0:00:00.025643
 
@@ -91,7 +91,7 @@ A protection overhead of  53.42 % - percentage of additional protection data
 
 Calculation time (H:M:S:ms):   0:00:00.002213
 Total running time (H:M:S:ms): 0:00:00.027898
-Linux:Documents user1$ python isilon_space_calc.py /Users/user1/Desktop/isilon\ script\ test\ dir/ -s 3 -p n+2:1 -u MB
+Linux:Documents user1$ python isilon_capacity_calc.py /Users/user1/Desktop/isilon\ script\ test\ dir/ -s 3 -p n+2:1 -u MB
 Reading metadata...
 Read metadata for  158  files in (H:M:S:ms): 0:00:00.030907
 
@@ -104,7 +104,7 @@ A protection overhead of  55.27 % - percentage of additional protection data
 
 Calculation time (H:M:S:ms):   0:00:00.002148
 Total running time (H:M:S:ms): 0:00:00.033103
-Linux:Documents user1$ python isilon_space_calc.py /Users/user1/Desktop/isilon\ script\ test\ dir/ -s 3 -p n+3:1 -u MB
+Linux:Documents user1$ python isilon_capacity_calc.py /Users/user1/Desktop/isilon\ script\ test\ dir/ -s 3 -p n+3:1 -u MB
 Reading metadata...
 Read metadata for  158  files in (H:M:S:ms): 0:00:00.035157
 
@@ -117,45 +117,9 @@ A protection overhead of  58.45 % - percentage of additional protection data
 
 Calculation time (H:M:S:ms):   0:00:00.002990
 Total running time (H:M:S:ms): 0:00:00.038216
-Linux:Documents user1$ python isilon_space_calc.py /Users/user1/Desktop/isilon\ script\ test\ dir/ -s 3 -p n+4:1 -u MB
+Linux:Documents user1$ python isilon_capacity_calc.py /Users/user1/Desktop/isilon\ script\ test\ dir/ -s 3 -p n+4:1 -u MB
 Reading metadata...
 Read metadata for  158  files in (H:M:S:ms): 0:00:00.024812
-
-Calculating filesizes...
-Percent: [########################################] Done!
-
-Original data size is:  407 MB
-Isilon size is       :  653 MB
-A protection overhead of  60.46 % - percentage of additional protection data
-
-Calculation time (H:M:S:ms):   0:00:00.002147
-Total running time (H:M:S:ms): 0:00:00.027001
-Linux:Documents user1$ python isilon_space_calc.py /Users/user1/Desktop/isilon\ script\ test\ dir/ -s 3 -p 2x -u MB
-Reading metadata...
-Read metadata for  158  files in (H:M:S:ms): 0:00:00.029575
-
-Calculating filesizes...
-Percent: [########################################] Done!
-
-Original data size is:  407 MB
-Isilon size is       :  846 MB
-A protection overhead of  108.02 % - percentage of additional protection data
-
-Calculation time (H:M:S:ms):   0:00:00.001908
-Total running time (H:M:S:ms): 0:00:00.031524
-Linux:Documents user1$ python isilon_space_calc.py /Users/user1/Desktop/isilon\ script\ test\ dir/ -s 3 -p 3x -u MB
-Reading metadata...
-Read metadata for  158  files in (H:M:S:ms): 0:00:00.028768
-
-Calculating filesizes...
-Percent: [########################################] Done!
-
-Original data size is:  407 MB
-Isilon size is       :  1270 MB
-A protection overhead of  212.03 % - percentage of additional protection data
-
-Calculation time (H:M:S:ms):   0:00:00.001893
-Total running time (H:M:S:ms): 0:00:00.030701
 ```
 Please note that this script is **completely unsupported by Dell Technologies/EMC/Isilon** and should be considered as in a beta state/
 experimental.  Although written in good faith there are of course **no guarantees** the results will be accurate.
