@@ -22,6 +22,8 @@ calculate the eventual capacity and it will run through each file and calculate 
 Firstly you need the Python shell to run the script.  Python is available for many platforms (Windows, Linux, Unix, OSX and others)
 [download Python](https://www.python.org/downloads/)
 
+Note: There are 2 major current releases for Python, 2 & 3.  Please use appropriate script for your Python version (if you get this wrong you'll just get some error messages).
+
 Then run the script using the following syntax:
 
 `python isilon_capacity_calc.py <source directory> -s <size of nodepool> -p <protection type>`
