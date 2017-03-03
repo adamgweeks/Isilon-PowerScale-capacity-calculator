@@ -23,6 +23,7 @@ Firstly you need the Python shell to run the script.  Python is available for ma
 [download Python](https://www.python.org/downloads/)
 
 Note: There are 2 major current releases for Python, 2 & 3.  Please use appropriate script for your Python version (if you get this wrong you'll just get some error messages).
+(Use `python --version` to check).
 
 Then run the script using the following syntax:
 
