@@ -1,0 +1,179 @@
+You are able to read the  /Users/tweeksy/Desktop/isilon script test dir/  dir
+Read metadata for  11  DIRs and  161  files in (H:M:S:ms): 0:00:00.024083
+Metdata size for Isilon will be: 274.04 KB
+
+
+
+Isilon space calculator report for  /Users/tweeksy/Desktop/isilon script test dir/ with  5  nodes using  n+2  protection
+
+
+Filename,Original size (KB),Isilon size(KB)
+.DS_Store , 16 , 48
+.DS_Store , 8 , 24
+Admin & Mgmt License Keys.docx , 16 , 48
+Isilon Admin and Management v8.0 YouTube Links.docx , 16 , 48
+.DS_Store , 8 , 24
+A&M 8.0 Mod00 Course Overview.pptx , 204 , 464
+A&M 8.0 Mod01 Intro to Isilon.pptx , 39960 , 66632
+A&M 8.0 Mod02 Data Protection and Layout.pptx , 6640 , 11216
+A&M 8.0 Mod03 Networking.pptx , 5384 , 8984
+A&M 8.0 Mod04 Access Management.pptx , 4104 , 6920
+A&M 8.0 Mod05 User Auth and File Access.pptx , 2724 , 4600
+A&M 8.0 Mod06 Storage Administration.pptx , 9996 , 16688
+A&M 8.0 Mod07 Job Engine.pptx , 3620 , 6184
+A&M 8.0 Mod08 Monitoring.pptx , 5244 , 8832
+Isilon Administration and Management Course_Instructor.pdf , 49288 , 82312
+PPAM_80_LabGuide_Instructor.pdf , 17848 , 29880
+Isilon Administration and Management Course_Student Guide.pdf , 49288 , 82312
+Lab Guide_May2015.pdf , 12880 , 21584
+PPAM_80_LabCredentials.pdf , 416 , 736
+PPAM_80_LabGuide_Student.pdf , 17836 , 29872
+.DS_Store , 8 , 24
+00690934.doc , 112 , 336
+00690934.doc.rtf , 172 , 432
+162030_164219600294626_7360270_n.jpg , 12 , 48
+1806.jpg , 108 , 336
+25906302448-532839650-ticket.pdf , 100 , 312
+_lisez_moi.txt , 8 , 24
+access point (1).txt , 4 , 24
+access point-2.txt , 4 , 24
+access point.txt , 4 , 24
+Ace Estimate for Ms Cox 8.08.15-1.doc , 708 , 1224
+adrianconstructionservices_estimate_101.pdf , 108 , 336
+ajax-loader-2.gif , 8 , 24
+ajax-loader.gif , 4 , 24
+Amex_EMC_EmpAgreement-2.doc , 28 , 96
+Amex_EMC_EmpAgreement.doc , 28 , 96
+BingSiteAuth.xml , 4 , 24
+CHANGELOG-2.TXT , 116 , 360
+CHANGELOG.TXT , 116 , 360
+CV.docx , 476 , 928
+datapackage.json , 4 , 24
+ESTA-Application.html , 72 , 216
+EUR_BIOS.BIN , 128 , 384
+EUR_BIOS.BIN.cpgz , 92 , 288
+event.ics , 4 , 24
+export.mhtml , 4 , 24
+favicon-2.ico , 4 , 24
+favicon.ico , 4 , 24
+Fletcher Hotel Nieuwegein - Booking confirmed.pdf , 220 , 480
+fp_js.js , 4 , 24
+grab.tiff , 32 , 96
+h12451-xtremio-4-system-specifications-ss.pdf , 512 , 1024
+handytrip_info_for_bolivia_Punata_4c99639ba336e5c43a026619f1afc958.pdf , 64 , 192
+handytrip_info_for_egypt_Cairo_f80a21e16b91b2d71b9ca41a0e037b4d.pdf , 212 , 472
+handytrip_info_for_france_Paris_3963d3636678dbfdfb321447683cbe70.pdf , 64 , 192
+handytrip_info_for_germany_Oberursel_c48fee202e244d369716a50c10ec6d8f.pdf , 56 , 168
+handytrip_info_for_israel_Peta_Tiqwa_80097a00e198fab363f00330e8259382.pdf , 212 , 472
+handytrip_info_for_israel_Tel_Aviv_051e98e8eb0e7d833e96e7e84804d7b0.pdf , 64 , 192
+handytrip_info_for_japan_Kyoto_47e14bd1ece28c9df0b77d3df5089ab5.pdf , 68 , 216
+handytrip_info_for_japan_Kyoto_a82acf75e5677f60ec1b18cfc78ccc08.pdf , 68 , 216
+handytrip_info_for_japan_Kyoto_bc821076a0155717c1fc34ab777e424c.pdf , 36 , 120
+handytrip_info_for_japan_Kyoto_cc821eaa760771890ea8d688eb315c90.pdf , 64 , 192
+handytrip_info_for_japan_Kyoto_d2a2179f5adaf3786afac33a8ae8128a.pdf , 64 , 192
+handytrip_info_for_japan_Kyoto_d82a41fe57c839082fa7b9c67ef7f342.pdf , 4 , 24
+handytrip_info_for_japan_Tokyo_3d6ef41678b73246b5f43dcd57a6fcaf.pdf , 72 , 216
+handytrip_info_for_japan_Tokyo_42192193d22c4fc410a7f20c70b307a3.pdf , 68 , 216
+handytrip_info_for_japan_Tokyo_85fa05a276742a9d07cdc02703902ad8.pdf , 64 , 192
+handytrip_info_for_japan_Tokyo_9901c1fd0cd0146aeb54b9ac3d071af3.pdf , 8 , 24
+handytrip_info_for_japan_Tokyo_cb75e804620f1b2c00259e6bd8fe8956.pdf , 64 , 192
+handytrip_info_for_japan_Tokyo_dcebb7ed2559d186f259d455a6fe53b3.pdf , 4 , 24
+handytrip_info_for_japan_Tokyo_e14e302422f3fb0549db3478cf137200.pdf , 72 , 216
+handytrip_info_for_netherlands_Utrecht.pdf , 56 , 168
+handytrip_info_for_qatar_Doha_ec99c3daedc8e1bc9ec566eeb8cfceb7.pdf , 64 , 192
+handytrip_info_for_russia_Moscow.pdf , 64 , 192
+handytrip_info_for_south_korea_Seoul_41880b487a77cbcac4e379b02919947a.pdf , 68 , 216
+handytrip_info_for_united_arab_emirates_Dubai-2.pdf , 220 , 480
+handytrip_info_for_united_arab_emirates_Dubai-3.pdf , 220 , 480
+handytrip_info_for_united_arab_emirates_Dubai.pdf , 220 , 480
+handytrip_info_for_united_arab_emirates_Dubai_30ed7ddfad017bbac04fe862c07b4998.pdf , 72 , 216
+handytrip_info_for_united_arab_emirates_Dubai_3f8f86f646e8866edbf22c1fa81da3d1.pdf , 68 , 216
+handytrip_info_for_united_arab_emirates_Dubai_523eeceeb406213aeb5d440e171ffc6f.pdf , 68 , 216
+handytrip_info_for_united_arab_emirates_Dubai_8593c66415ab9b76075f483c08d8577d.pdf , 68 , 216
+handytrip_info_for_united_arab_emirates_Dubai_bb49789b82b03668de044364faede8d3.pdf , 68 , 216
+handytrip_info_for_united_arab_emirates_Dubai_dd00dd56586d240d0fbb1e89d917b2b3.pdf , 72 , 216
+handytrip_info_for_united_arab_emirates_Dubai_ebbb2bfab67e68fb86af587eb0007af4.pdf , 220 , 480
+handytrip_info_for_united_states_New_York_City.pdf , 40 , 120
+handytrip_info_for_united_states_Warren_Township.pdf , 40 , 120
+How to install the RSA SecurID application on your device and determine the device ID.pdf , 640 , 1152
+How_To_AFC_Cardmember-Initiated_Applicant_Guide.docx , 424 , 760
+hreflang.csv , 8 , 24
+Icon_set_assert.svg , 8 , 24
+IDC_Report_AFA_Performance_Testing_Framework.pdf , 348 , 608
+img-302165720-0001.pdf , 32 , 96
+img-302165732-0001.pdf , 32 , 96
+img-Z18165031-0001.pdf , 28 , 96
+installer , 288 , 544
+Instructions_for_Student_Evaluation_XtremIOMgmt.doc , 100 , 312
+Invoice 1156256 .pdf , 8 , 24
+Invoice-103208170001.pdf , 692 , 1208
+Invoice.pdf , 76 , 240
+iRedMail-0.9.3.tar.bz2 , 124 , 384
+jap_bios.bin , 128 , 384
+LabAnswerSheet.docx , 28 , 96
+LFH0622_00-_FP-global-001.jpeg , 100 , 312
+mobile-01.jpg , 600 , 1112
+My-Oculus-Live-Demo.ics , 4 , 24
+N1J9n5WL.gif , 8 , 24
+On Demand Delivery.pdf , 52 , 168
+POW - Prisoners of War (U).zip , 112 , 336
+QF_Boarding_Pass_5DIFBK_05MAY.pdf , 76 , 240
+QF_Boarding_Pass_5LYJ4O_05MAY.pdf , 76 , 240
+Russia Visa Application kit.pdf , 672 , 1184
+Scan001.PDF , 64 , 192
+Scanned from a Xerox Multifunction Device.pdf , 16 , 48
+Showbox.txt , 4 , 24
+sitemap.xml , 24 , 72
+Sony - PlayStation - BIOS Images (23) (2015-03-10).dat , 8 , 24
+Statement_Jun 2016.pdf , 44 , 144
+target.png , 4 , 24
+us_bios.bin , 128 , 384
+wallpaper-01.jpg , 604 , 1120
+wallpaper-02-2.jpg , 596 , 1112
+wallpaper-02.jpg , 596 , 1112
+wallpaper-03-2.jpg , 592 , 1104
+wallpaper-03.jpg , 592 , 1104
+XtremIO1StudentLoginSheetSeptember2nd.xlsx , 16 , 48
+yandex_50871c06241ac1a6.html , 4 , 24
+.DS_Store , 8 , 24
+h13827-unisphere-central-v4-wp.pdf , 1188 , 2040
+h15084-emc-unity-introduction-to-the-unity-platform.pdf , 1972 , 3368
+h15085-emc-unity-unisphere-overview.pdf , 2288 , 3824
+h15086-emc-unity-fast-technology-overview.pdf , 1280 , 2304
+h15087-emc-unity-unity-file-system.pdf , 660 , 1176
+h15088-emc-unity-replication-technologies.pdf , 1708 , 2992
+h15089-emc-unity-snapshots.pdf , 452 , 856
+h15090-emc-unity-data-at-rest-encryption.pdf , 284 , 544
+h15091-emc-unity-virtualization-integration.pdf , 1132 , 1904
+h15092-emc-unity-unity-vsa.pdf , 684 , 1200
+h15093-emc-unity-best-practices-guide.pdf , 132 , 392
+Unity Fundamentals_srg.pdf , 7088 , 11952
+Unity Hardware Fundamentals_srg.pdf , 5664 , 9504
+Unity Youtube Links.docx , 16 , 48
+.DS_Store , 8 , 24
+CV.doc , 52 , 168
+EMC Isilon Multiprotocol Data Access Module 1.pdf , 5580 , 9424
+h10920-wp-onefs-multiprotocol.pdf , 572 , 1088
+h12417-identities-access-tokens-isilon-onefs-user-mapping-service-wp.pdf , 312 , 568
+h13115-wp-emc-isilon-onefs-multiprotocol-security-untangled.pdf , 492 , 976
+handy.png , 196 , 456
+Introduction to XtremIO XDP.pdf , 832 , 1472
+Manager approval Amex.tiff , 44 , 144
+OneFS 8 API reference guide.pdf , 1160 , 1944
+OneFS_8_0_Tech_Dive.pdf , 15008 , 25056
+Unity Video links.rtf , 4 , 24
+Tech Break-Disk-w-Danger.mp4 , 16964 , 28376
+Tech Break-MakeItSnappy.mp4 , 48064 , 80192
+Tech Break-Mistaken-Identity.mp4 , 38464 , 64192
+Tech Break-Permission.mp4 , 25412 , 42456
+test1 , 0 , 0
+test2 , 0 , 0
+test3 , 0 , 0
+
+
+Original data size is:  407.0 MB
+Isilon size is       :  691.37 MB
+A protection overhead of  69.64 % - percentage of additional protection data
+
+Calculation time (H:M:S:ms):   0:00:00.001620
+Total running time (H:M:S:ms): 0:00:00.025746

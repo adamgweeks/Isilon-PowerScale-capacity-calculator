@@ -3,7 +3,7 @@
 # written by Adam.Weeks@dell.com
 # unofficial and NOT supported by Dell Technologies/EMC/Isilon!
 
-# example useage: python isilon_space_calc.py /Users/user1/Documents/ -s 9 -p N+2 -u GB
+# example useage: python isilon_space_calc_py2.py /Users/user1/Documents/ -s 9 -p N+2
 # see https://github.com/adamgweeks/Isilon-capacity-calculator
 #
 # for Python 2!
@@ -179,7 +179,7 @@ if os.path.isdir(dirname) is False:
 	exit()
 #check if directory is readable
 if os.access(dirname, os.R_OK):
-	print "You are able to read the /root dir"	
+	print "You are able to read the ",dirname," dir"	
 else:
 	print "Error! dir:",dirname," is not readable."	
 	exit()
@@ -317,7 +317,7 @@ for file_size in filesizes:
 						remainder_size=rounded_file_size - ((actual_stripe_size * rounded_stripes) * 128)# data left over (from partial)
 
 						#if (no_stripes<=1) and (no_stripes>0): #we don't have a full stripe here, so no need to calculate the full stripes size.
-						if (no_stripes==1) and (remainder_size>1): # we have just over 1 stripe (one a bit at least!)
+						if (no_stripes==1) and (remainder_size>0): # we have just over 1 stripe (one a bit at least!)
 																rounded_stripes=int(no_stripes) # round up the number of stripes by converting to an integer (we will handle the 'overspill' of writing a full stripe later)r
 																rounded=False
 																full_stripes_size=((actual_stripe_size * rounded_stripes) + (requested_protection * rounded_stripes)) * 128 # how would the stripes be written (taking into account the node pool size and protection

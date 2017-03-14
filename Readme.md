@@ -19,7 +19,7 @@ calculate the eventual capacity and it will run through each file and calculate 
 
 ## Usage:
 
-Firstly you need the Python shell to run the script.  Python is available for many platforms (Windows, Linux, Unix, OSX and others)
+Firstly you need the Python shell to run the script.  Python is available for many platforms (Windows, Linux, Unix, OSX/MacOS and others)
 [download Python](https://www.python.org/downloads/)
 
 Note: There are 2 major current releases for Python, 2 & 3.  Please use appropriate script for your Python version (if you get this wrong you'll just get some error messages).
@@ -33,17 +33,8 @@ for example:
 
 `python isilon_capacity_calc_py2.py /Users/weeksa/Documents/ -s 9 -p n+2:1`
 
-Additional options:
+Outputs:
 
-`[-v (for verbose file list printed) | -c (for csv formatted verbose output) | -u output data units (KB,MB,TB,PB,H), default=H (H=human/auto sizing)]`
-
-verbose mode will give you a list of individual files on screeen, CSV is meant for creating a .CSV file (can be opened in a spreadsheet for ease of reading)
-note with CSV output you have to direct the output of the command into a file, like so:
-
-`python isilon_capacity_calc_py2.py <source directory> -s <size of nodepool> -p <protection type> -u <data measurement units> -c > myfiles.csv`
-
-
-Output:
 ```
 Reading metadata...
 Read metadata for  8019  files in (H:M:S:ms): 0:00:00.446705
@@ -59,10 +50,25 @@ Calculation time (H:M:S:ms):   0:00:00.147969
 Total running time (H:M:S:ms): 0:00:00.594736
 ```
 
+
+Additional options:
+
+`[-v (for verbose file list printed) | -c (for csv formatted verbose output) | -u output data units (KB,MB,TB,PB,H), default=H (H=human/auto sizing)]`
+
+verbose mode will give you a list of individual files on screeen, CSV is meant for creating a .CSV file (can be opened in a spreadsheet for ease of reading)
+note with CSV output you have to direct the output of the command into a file, like so:
+
+`python3.6 isilon_capacity_calc_py3.py <source directory> -s <size of nodepool> -p <protection type> -u <data measurement units> -c > myfiles.csv`
+
+
 ## As this script is still in testing...
 **_PLEASE UPDATE THE ABOVE WIKI WITH ANY ACCURACY TESTS/REPORTS! _**
 
-For testing results see the [results_comparison_table.md](results_comparison_table.md) file; it does show that there are differences of a few percent in my testing thus far. 
+For testing results (Isilon vs script) see the [results_comparison_table.md](results_comparison_table.md) file; it does show that there are differences of a few percent in my testing thus far. 
+
+For exact detail, see a [sample CSV output](https://github.com/adamgweeks/Isilon-capacity-calculator/testsize.csv) for a 5 node cluster using N+2 protection.
+
+If you have any suggestions as to why this may be happening, please comment on [Issues](https://github.com/adamgweeks/Isilon-capacity-calculator/issues)
 
 ## Working test comparison
 
@@ -169,5 +175,5 @@ Please note that this script is **completely unsupported by Dell Technologies/EM
 experimental.  Although written in good faith there are of course **no guarantees** the results will be accurate.
 
 If you discover any issues, have any feature suggestions please contact me at 
-Adam.Weeks@dell.com
+Adam.Weeks@dell.com or post a comment to [Issues](https://github.com/adamgweeks/Isilon-capacity-calculator/issues)
   
