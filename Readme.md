@@ -65,9 +65,6 @@ note with CSV output you have to direct the output of the command into a file, l
 **_PLEASE UPDATE THE ABOVE WIKI WITH ANY ACCURACY TESTS/REPORTS! _**
 
 For testing results (Isilon vs script) see the [results_comparison_table.md](results_comparison_table.md) file; it does show that there are differences of a few percent in my testing thus far. 
-
-For exact detail, see a [sample CSV output](https://github.com/adamgweeks/Isilon-capacity-calculator/testsize.csv) for a 5 node cluster using N+2 protection.
-
 If you have any suggestions as to why this may be happening, please comment on [Issues](https://github.com/adamgweeks/Isilon-capacity-calculator/issues)
 
 ## Working test comparison

@@ -28,5 +28,5 @@
 | 9                       | 466.89 | 539.07 | 633.42 | 758.91 | 477.13 | 511.76 | 546.38 | 560.04 |        |       |     | 
 
 
-See a [Detailed CSV](https://github.com/adamgweeks/Isilon-capacity-calculator/testsize.csv) for 5 nodes with N+2 protection.
+
 
