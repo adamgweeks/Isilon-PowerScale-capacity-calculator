@@ -28,5 +28,5 @@
 | 9                       | 466.89 | 539.07 | 633.42 | 758.91 | 477.13 | 511.76 | 546.38 | 560.04 |        |       |     | 
 
 
-
+For a detailed CSV output from the script (N+2 protection with a 5 node node pool) [click here...](https://github.com/adamgweeks/Isilon-capacity-calculator/blob/master/five_nodes_N%2B2%2Bprotection_sample.csv).
 
