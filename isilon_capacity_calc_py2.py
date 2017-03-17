@@ -321,7 +321,7 @@ for file_size in filesizes:
 																rounded_stripes=int(no_stripes) # round up the number of stripes by converting to an integer (we will handle the 'overspill' of writing a full stripe later)r
 																rounded=False
 																full_stripes_size=((actual_stripe_size * rounded_stripes) + (requested_protection * rounded_stripes)) * 128 # how would the stripes be written (taking into account the node pool size and protection
-						elif (no_stripes<=1) and (no_stripes>0): # we have either precisely 1 stripe, or less than 1 complete stripe
+						elif (no_stripes<1) and (no_stripes>0): # we have either precisely 1 stripe, or less than 1 complete stripe
 																no_stripes=1
 																full_stripes_size=0
 																rounded=True

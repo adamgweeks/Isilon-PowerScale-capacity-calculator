@@ -1,29 +1,46 @@
+You are able to read the  /Users/tweeksy/Desktop/Unity Whitepapers/  dir
+Read metadata for  1  DIRs and  28  files in (H:M:S:ms): 0:00:00.056807
+Metdata size for Isilon will be: 45.76 KB
+
+
+
+Isilon space calculator report for  /Users/tweeksy/Desktop/Unity Whitepapers/ with  5  nodes using  n+2  protection
+
+
 Filename,Original size (KB),Isilon size(KB)
-.DS_Store ,8,24
-blankfile ,0,0
-h13827-unisphere-central-v4-wp.pdf ,1188,2040
-h15084-emc-unity-introduction-to-the-unity-platform.pdf ,1972,3368
-h15085-emc-unity-unisphere-overview.pdf ,2288,3824
-h15086-emc-unity-fast-technology-overview.pdf ,1280,2304
-h15087-emc-unity-unity-file-system.pdf ,660,1176
-h15088-emc-unity-replication-technologies.pdf ,1708,2992
-h15089-emc-unity-snapshots.pdf ,452,856
-h15090-emc-unity-data-at-rest-encryption.pdf ,284,544
-h15091-emc-unity-virtualization-integration.pdf ,1132,1904
-h15092-emc-unity-unity-vsa.pdf ,684,1200
-h15093-emc-unity-best-practices-guide.pdf ,132,392
-Unity Fundamentals_srg.pdf ,7088,11952
-Unity Hardware Fundamentals_srg.pdf ,5664,9504
-Unity Youtube Links.docx ,16,48
-.DS_Store ,8,24
-CV.doc ,52,168
-EMC Isilon Multiprotocol Data Access Module 1.pdf ,5580,9424
-h10920-wp-onefs-multiprotocol.pdf ,572,1088
-h12417-identities-access-tokens-isilon-onefs-user-mapping-service-wp.pdf ,312,568
-h13115-wp-emc-isilon-onefs-multiprotocol-security-untangled.pdf ,492,976
-handy.png ,196,456
-Introduction to XtremIO XDP.pdf ,832,1472
-Manager approval Amex.tiff ,44,144
-OneFS 8 API reference guide.pdf ,1160,1944
-OneFS_8_0_Tech_Dive.pdf ,15008,25056
-Unity Video links.rtf ,4,24
+.DS_Store , 8 , 24
+blankfile , 0 , 0
+h13827-unisphere-central-v4-wp.pdf , 1188 , 2040
+h15084-emc-unity-introduction-to-the-unity-platform.pdf , 1972 , 3368
+h15085-emc-unity-unisphere-overview.pdf , 2288 , 3824
+h15086-emc-unity-fast-technology-overview.pdf , 1280 , 2304
+h15087-emc-unity-unity-file-system.pdf , 660 , 1176
+h15088-emc-unity-replication-technologies.pdf , 1708 , 2992
+h15089-emc-unity-snapshots.pdf , 452 , 856
+h15090-emc-unity-data-at-rest-encryption.pdf , 284 , 544
+h15091-emc-unity-virtualization-integration.pdf , 1132 , 1904
+h15092-emc-unity-unity-vsa.pdf , 684 , 1200
+h15093-emc-unity-best-practices-guide.pdf , 132 , 392
+Unity Fundamentals_srg.pdf , 7088 , 11952
+Unity Hardware Fundamentals_srg.pdf , 5664 , 9504
+Unity Youtube Links.docx , 16 , 48
+.DS_Store , 8 , 24
+CV.doc , 52 , 168
+EMC Isilon Multiprotocol Data Access Module 1.pdf , 5580 , 9424
+h10920-wp-onefs-multiprotocol.pdf , 572 , 1088
+h12417-identities-access-tokens-isilon-onefs-user-mapping-service-wp.pdf , 312 , 568
+h13115-wp-emc-isilon-onefs-multiprotocol-security-untangled.pdf , 492 , 976
+handy.png , 196 , 456
+Introduction to XtremIO XDP.pdf , 832 , 1472
+Manager approval Amex.tiff , 44 , 144
+OneFS 8 API reference guide.pdf , 1160 , 1944
+OneFS_8_0_Tech_Dive.pdf , 15008 , 25056
+Unity Video links.rtf , 4 , 24
+
+
+Original data size is:  47.0 MB
+Isilon size is       :  81.52 MB
+A protection overhead of  70.99 % - percentage of additional protection data
+
+Calculation time (H:M:S:ms):   0:00:00.000369
+Total running time (H:M:S:ms): 0:00:00.057248
