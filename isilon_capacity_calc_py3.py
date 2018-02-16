@@ -7,7 +7,9 @@
 # see https://github.com/adamgweeks/Isilon-capacity-calculator
 #
 # for Python 3!
-	
+
+
+
 from datetime import datetime	# get script start time
 startTime = datetime.now()		# script timed as this could take a while!	
 
@@ -24,15 +26,19 @@ parser.add_argument("--csv","-c", help="verbose output as CSV file",action="stor
 
 # human filesizing function
 def human_size(size_in_kb):
+		out_size=float()
 		out_size=(size_in_kb/(1024*1024*1024*1024))
 		if out_size>=1:
+			#units="PB"
 			output=[out_size,'PB']
 			return(output)  
 		else:
 			out_size=(size_in_kb/(1024*1024*1024))
 			if out_size>=1:
+				#units="TB"
 				output=[out_size,'TB']
 				return(output)  
+				#print "outsize is ",out_size,units
 			else:
 				out_size=(size_in_kb/(1024*1024))
 				if out_size>=1:
@@ -44,7 +50,6 @@ def human_size(size_in_kb):
 						output=[out_size,'MB']
 						return(output)  
 					else:
-
 						output=[size_in_kb,'KB']
 						return(output)
 					
@@ -166,17 +171,18 @@ t_total=0
 import os
 import sys
 
+
 #do some sanity checks on given arguments
 
 #check if DIR exists
 if os.path.isdir(dirname) is False:
-	print("Error! directory:'",dirname,"' doesn't appear to exist.")
+	print(("Error! directory:'",dirname,"' doesn't appear to exist."))
 	exit()
 #check if directory is readable
 if os.access(dirname, os.R_OK):
-	print("You are able to read the ",dirname," dir")	
+	print(("You are able to read the ",dirname," dir"))	
 else:
-	print("Error! dir:",dirname," is not readable.")	
+	print(("Error! dir:",dirname," is not readable."))	
 	exit()
 
 #if the node pool size is greater than the max stripe size, limit it TO the maximum stripe size
@@ -220,7 +226,7 @@ for root, dirs, files in os.walk(dirname):	#go and retrieve a list of all the fi
 		if os.path.isfile(filepath):	# check this is a file (i.e. not a link)
 			files_to_process=files_to_process+1 # used later for progress bar
 			#filesizes.append(os.path.getsize(filepath)) # add to file size for this file to the list 
-			filesizes.append((os.stat(filepath).st_blocks * 512)) #new alternative sizing, more inline with DU command
+			filesizes.append((os.stat(filepath).st_blocks * 512)) #new alternative sizing, to match disk blocks size on Isilon (and most disks/OS configs)
 			if verbose==True:
 				filenames.append(filename)
    
@@ -237,8 +243,8 @@ else:
 	dirmcount = dirmcount * (requested_protection + 1)
 	filemcount=filemcount * requested_protection # if data is mirrored we simply mirror the metadata
 
-metadata_size=(filemcount + dirmcount) * 0.520	
-total_size=total_size + (metadata_size/1024) # convert metadata size to KB
+metadata_size=(filemcount + dirmcount) * 8	
+total_size=total_size + metadata_size # tally up metadata size
 if odata_units=="H":
 		output=human_size(metadata_size)
 		metadata_size=output[0]
@@ -246,8 +252,8 @@ if odata_units=="H":
 else:
 		metadata_size=metadata_size/data_divider	
 		metadata_size=round(metadata_size,4) # (rounded to 3 decimal places for ease of reading)
-print("Read metadata for ",dirs_to_process," DIRs and ",files_to_process," files in (H:M:S:ms):",datetime.now() - startTime) # show how long this took and how many files we have (really just for reference) 
-print("Metdata size for Isilon will be:",metadata_size,data_units)         
+print(("Read metadata for ",dirs_to_process," DIRs and ",files_to_process," files in (H:M:S:ms):",datetime.now() - startTime)) # show how long this took and how many files we have (really just for reference) 
+print(("Metdata size for Isilon will be:",metadata_size,data_units))         
 i=0 #for progress bar		
 
 print("")
@@ -260,7 +266,7 @@ if verbose==True:
 	else:
 		print("")
 		print("")
-		print("Isilon space calculator report for ",dirname,"with ", node_pool_size ," nodes using ",protection_string," protection")
+		print(("Isilon space calculator report for ",dirname,"with ", node_pool_size ," nodes using ",protection_string," protection"))
 		print("")
 		print("")
 		print("Filename,Original size (KB),Isilon size(KB)")
@@ -278,7 +284,7 @@ for file_size in filesizes:
 
 	if file_size>0:
 		remainder=0       
-	# round up to ceiling 8kb (Isilon uses an 8KB filesystem block size, so we need to round up)
+	# round up to ceiling 8kb (Isilon uses an 8KB filesystem block size, so we need to round up)		
 		rounded_file_size=int(8 * round(float(file_size)/8))
 		if(rounded_file_size<file_size):
 			rounded_file_size=rounded_file_size + 8
@@ -304,29 +310,31 @@ for file_size in filesizes:
 						#we have a partial DU
 							DU_count=int(DU_count)
 							overspill=128-(rounded_file_size - (int(DU_count)*128)) # our last DU will not really be complete, so how much do we remove?  (the overspill value)
-	
+
 
 						actual_stripe_size=node_pool_size - requested_protection # get the stripe size (for DUs) available
 						no_stripes=DU_count/float(actual_stripe_size)# how many stripes do we need (not necessarily an integer result)
 						rounded_stripes=int(no_stripes)
 						remainder_size=rounded_file_size - ((actual_stripe_size * rounded_stripes) * 128)# data left over (from partial)
-					
-						if (no_stripes==1) and (remainder_size>0):
+
+						#if (no_stripes<=1) and (no_stripes>0): #we don't have a full stripe here, so no need to calculate the full stripes size.
+						if (no_stripes==1) and (remainder_size>0): # we have just over 1 stripe (one a bit at least!)
 																rounded_stripes=int(no_stripes) # round up the number of stripes by converting to an integer (we will handle the 'overspill' of writing a full stripe later)r
 																rounded=False
 																full_stripes_size=((actual_stripe_size * rounded_stripes) + (requested_protection * rounded_stripes)) * 128 # how would the stripes be written (taking into account the node pool size and protection
-						elif (no_stripes<1) and (no_stripes>0):
+						elif (no_stripes<1) and (no_stripes>0): # we have either precisely 1 stripe, or less than 1 complete stripe
 																no_stripes=1
 																full_stripes_size=0
 																rounded=True
 					
 					
-						else: 
+						else: 		# we have more than 1 stripe
 																rounded_stripes=int(no_stripes) # round up the number of stripes by converting to an integer (we will handle the 'overspill' of writing a full stripe later)
 																rounded=False
 																full_stripes_size=((actual_stripe_size * rounded_stripes) + (requested_protection * rounded_stripes)) * 128 # how would the stripes be written (taking into account the node pool size and protection
 						# check for overspill
 						if(overspill>0):
+							#remainder_size=0
 							if rounded==True:
 									remainder_size=rounded_file_size
 							else:
@@ -351,9 +359,9 @@ for file_size in filesizes:
 			osize_s=osize_s.rjust(15)
 			filename=filename.ljust(50)
 			file_size_s=file_size_s.ljust(15)
-			print(filename,":",osize_s," - ",file_size_s)
+			print((filename,":",osize_s," - ",file_size_s))
 		else:
-			print(filename,",",osize_s,",",file_size_s)			
+			print((filename,",",osize_s,",",file_size_s))			
 	t_total=total_size
 	total_size=(t_total+file_size)
 	t_total=total_size
@@ -378,19 +386,25 @@ totemp=round(totemp,2)
 #show the results of all this (timings are more for reference as this could take hours/days!)
 print("")
 print("")	
-print("Original data size is: ",totemp,data_units)
+print(("Original data size is: ",totemp,data_units))
 
 if odata_units=="H":
+		output=float()
+		total_size=float(total_size)
 		output=human_size(total_size)
 		total_size=output[0]
 		data_units=output[1]
 else:	
+		total_size=float(total_size)
 		total_size=total_size/data_divider
-	
+
+#total_size=total_size+metadata_size	
 total_size=round(total_size,2)
 	
-print("Isilon size is       : ", total_size,data_units)
-print("A protection overhead of ",diff,"% - percentage of additional protection data")
+print(("Isilon size is       : ", total_size,data_units))
+print(("A protection overhead of ",diff,"% - percentage of additional protection data"))
 print("")
-print("Calculation time (H:M:S:ms):  ",datetime.now() - calcTime)  
-print("Total running time (H:M:S:ms):",datetime.now() - startTime) 
+print(("Calculation time (H:M:S:ms):  ",datetime.now() - calcTime))  
+print(("Total running time (H:M:S:ms):",datetime.now() - startTime))  
+
+ 

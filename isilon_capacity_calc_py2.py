@@ -26,6 +26,7 @@ parser.add_argument("--csv","-c", help="verbose output as CSV file",action="stor
 
 # human filesizing function
 def human_size(size_in_kb):
+		out_size=float()
 		out_size=(size_in_kb/(1024*1024*1024*1024))
 		if out_size>=1:
 			#units="PB"
@@ -225,7 +226,7 @@ for root, dirs, files in os.walk(dirname):	#go and retrieve a list of all the fi
 		if os.path.isfile(filepath):	# check this is a file (i.e. not a link)
 			files_to_process=files_to_process+1 # used later for progress bar
 			#filesizes.append(os.path.getsize(filepath)) # add to file size for this file to the list 
-			filesizes.append((os.stat(filepath).st_blocks * 512)) #new alternative sizing, more inline with DU command
+			filesizes.append((os.stat(filepath).st_blocks * 512)) #new alternative sizing, to match disk blocks size on Isilon (and most disks/OS configs)
 			if verbose==True:
 				filenames.append(filename)
    
@@ -242,8 +243,8 @@ else:
 	dirmcount = dirmcount * (requested_protection + 1)
 	filemcount=filemcount * requested_protection # if data is mirrored we simply mirror the metadata
 
-metadata_size=(filemcount + dirmcount) * 0.520	
-total_size=total_size + (metadata_size/1024) # convert metadata size to KB
+metadata_size=(filemcount + dirmcount) * 8	
+total_size=total_size + metadata_size # tally up metadata size
 if odata_units=="H":
 		output=human_size(metadata_size)
 		metadata_size=output[0]
@@ -283,7 +284,7 @@ for file_size in filesizes:
 
 	if file_size>0:
 		remainder=0       
-	# round up to ceiling 8kb (Isilon uses an 8KB filesystem block size, so we need to round up)
+	# round up to ceiling 8kb (Isilon uses an 8KB filesystem block size, so we need to round up)		
 		rounded_file_size=int(8 * round(float(file_size)/8))
 		if(rounded_file_size<file_size):
 			rounded_file_size=rounded_file_size + 8
@@ -388,12 +389,16 @@ print ""
 print "Original data size is: ",totemp,data_units
 
 if odata_units=="H":
+		output=float()
+		total_size=float(total_size)
 		output=human_size(total_size)
 		total_size=output[0]
 		data_units=output[1]
 else:	
+		total_size=float(total_size)
 		total_size=total_size/data_divider
-	
+
+#total_size=total_size+metadata_size	
 total_size=round(total_size,2)
 	
 print "Isilon size is       : ", total_size,data_units

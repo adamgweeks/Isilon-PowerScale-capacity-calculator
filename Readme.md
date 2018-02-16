@@ -62,13 +62,12 @@ note with CSV output you have to direct the output of the command into a file, l
 
 
 ## As this script is still in testing...
-**_PLEASE UPDATE THE ABOVE WIKI WITH ANY ACCURACY TESTS/REPORTS! _**
 
-For testing results (Isilon vs script) see the [results_comparison_table.md](results_comparison_table.md) file; it does show that there are differences of a few percent in my testing thus far. 
+For testing results (Isilon vs script) see the [results_comparison_table.md](results_comparison_table.md) file; it does show that there are small differences (possibly a difference in rounding). 
 For a detailed CSV output from the script (N+2 protection with a 5 node node pool) [click here...](https://github.com/adamgweeks/Isilon-capacity-calculator/blob/master/five_nodes_N%2B2%2Bprotection_sample.csv).
 
 
-If you have any suggestions as to why this may be happening, please comment on [Issues](https://github.com/adamgweeks/Isilon-capacity-calculator/issues)
+If you see any inaccuracies, or bugs please report to: [Issues](https://github.com/adamgweeks/Isilon-capacity-calculator/issues)
 
 ## Working test comparison
 
@@ -86,90 +85,117 @@ From a real Isilon cluster Node pool was 3 X200s.
 ### Using script:
 
 ```
-Linux:isilon_capacity_calculator user1$ python isilon_capacity_calc_py2.py /Users/user1/Desktop/isilon\ script\ test\ dir/  -s 3  -p n+1
+Linux1:isilon_capacity_calculator weeksa$ python isilon_capacity_calc_py2.py   ~/Desktop/isilon\ script\ test\ dir/ -p n+1 -s 3
+You are able to read the  /Users/weeksa/Desktop/isilon script test dir/  dir
 Reading metadata...
-Read metadata for  10  DIRs and  158  files in (H:M:S:ms): 0:00:00.029747
-Metdata size for Isilon will be: 179.92 KB
+Read metadata for  11  DIRs and  161  files in (H:M:S:ms): 0:00:00.031035
+Metdata size for Isilon will be: 2 MB
 
 Calculating filesizes...
 Percent: [########################################] Done!
 
 Original data size is:  407.0 MB
-Isilon size is       :  615.62 MB
-A protection overhead of  51.2 % - percentage of additional protection data
+Isilon size is       :  618.76 MB
+A protection overhead of  51.82 % - percentage of additional protection data
 
-Calculation time (H:M:S:ms):   0:00:00.002272
-Total running time (H:M:S:ms): 0:00:00.032070
-Linux:isilon_capacity_calculator user1$ python isilon_capacity_calc_py2.py /Users/user1/Desktop/isilon\ script\ test\ dir/  -s 3  -p n+2:1
+Calculation time (H:M:S:ms):   0:00:00.002610
+Total running time (H:M:S:ms): 0:00:00.033695
+
+Linux1:isilon_capacity_calculator weeksa$ python isilon_capacity_calc_py2.py   ~/Desktop/isilon\ script\ test\ dir/ -p n+2:1 -s 3
+You are able to read the  /Users/weeksa/Desktop/isilon script test dir/  dir
 Reading metadata...
-Read metadata for  10  DIRs and  158  files in (H:M:S:ms): 0:00:00.026127
-Metdata size for Isilon will be: 267.28 KB
+Read metadata for  11  DIRs and  161  files in (H:M:S:ms): 0:00:00.029415
+Metdata size for Isilon will be: 4 MB
 
 Calculating filesizes...
 Percent: [########################################] Done!
 
 Original data size is:  407.0 MB
-Isilon size is       :  624.09 MB
-A protection overhead of  53.28 % - percentage of additional protection data
+Isilon size is       :  629.47 MB
+A protection overhead of  54.45 % - percentage of additional protection data
 
-Calculation time (H:M:S:ms):   0:00:00.004553
-Total running time (H:M:S:ms): 0:00:00.030739
-Linux:isilon_capacity_calculator user1$ python isilon_capacity_calc_py2.py /Users/user1/Desktop/isilon\ script\ test\ dir/  -s 3  -p n+3:1
+Calculation time (H:M:S:ms):   0:00:00.002730
+Total running time (H:M:S:ms): 0:00:00.032199
+
+Linux1:isilon_capacity_calculator weeksa$ python isilon_capacity_calc_py2.py   ~/Desktop/isilon\ script\ test\ dir/ -p n+3:1 -s 3
+You are able to read the  /Users/weeksa/Desktop/isilon script test dir/  dir
 Reading metadata...
-Read metadata for  10  DIRs and  158  files in (H:M:S:ms): 0:00:00.024914
-Metdata size for Isilon will be: 354.64 KB
+Read metadata for  11  DIRs and  161  files in (H:M:S:ms): 0:00:00.037244
+Metdata size for Isilon will be: 5 MB
 
 Calculating filesizes...
 Percent: [########################################] Done!
 
 Original data size is:  407.0 MB
-Isilon size is       :  632.77 MB
-A protection overhead of  55.41 % - percentage of additional protection data
+Isilon size is       :  638.88 MB
+A protection overhead of  56.76 % - percentage of additional protection data
 
-Calculation time (H:M:S:ms):   0:00:00.002257
-Total running time (H:M:S:ms): 0:00:00.027224
-Linux:isilon_capacity_calculator user1$ python isilon_capacity_calc_py2.py /Users/user1/Desktop/isilon\ script\ test\ dir/  -s 3  -p n+4:1
+Calculation time (H:M:S:ms):   0:00:00.002612
+Total running time (H:M:S:ms): 0:00:00.039911
+
+Linux1:isilon_capacity_calculator weeksa$ python isilon_capacity_calc_py2.py   ~/Desktop/isilon\ script\ test\ dir/ -p n+4:1 -s 3
+You are able to read the  /Users/weeksa/Desktop/isilon script test dir/  dir
 Reading metadata...
-Read metadata for  10  DIRs and  158  files in (H:M:S:ms): 0:00:00.026704
-Metdata size for Isilon will be: 442.0 KB
+Read metadata for  11  DIRs and  161  files in (H:M:S:ms): 0:00:00.028041
+Metdata size for Isilon will be: 6 MB
 
 Calculating filesizes...
 Percent: [########################################] Done!
 
 Original data size is:  407.0 MB
-Isilon size is       :  643.09 MB
-A protection overhead of  57.95 % - percentage of additional protection data
+Isilon size is       :  650.72 MB
+A protection overhead of  59.66 % - percentage of additional protection data
 
-Calculation time (H:M:S:ms):   0:00:00.002241
-Total running time (H:M:S:ms): 0:00:00.028997
-Linux:isilon_capacity_calculator user1$ python isilon_capacity_calc_py2.py /Users/user1/Desktop/isilon\ script\ test\ dir/  -s 3  -p 2x
+Calculation time (H:M:S:ms):   0:00:00.002625
+Total running time (H:M:S:ms): 0:00:00.030718
+
+Linux1:isilon_capacity_calculator weeksa$ python isilon_capacity_calc_py2.py   ~/Desktop/isilon\ script\ test\ dir/ -p 2x -s 3
+You are able to read the  /Users/weeksa/Desktop/isilon script test dir/  dir
 Reading metadata...
-Read metadata for  10  DIRs and  158  files in (H:M:S:ms): 0:00:00.025199
-Metdata size for Isilon will be: 179.92 KB
+Read metadata for  11  DIRs and  161  files in (H:M:S:ms): 0:00:00.030803
+Metdata size for Isilon will be: 2 MB
 
 Calculating filesizes...
 Percent: [########################################] Done!
 
 Original data size is:  407.0 MB
-Isilon size is       :  815.36 MB
-A protection overhead of  100.26 % - percentage of additional protection data
+Isilon size is       :  818.54 MB
+A protection overhead of  100.84 % - percentage of additional protection data
 
-Calculation time (H:M:S:ms):   0:00:00.002514
-Total running time (H:M:S:ms): 0:00:00.027770
-Linux:isilon_capacity_calculator user1$ python isilon_capacity_calc_py2.py /Users/user1/Desktop/isilon\ script\ test\ dir/  -s 3  -p 3x
+Calculation time (H:M:S:ms):   0:00:00.002243
+Total running time (H:M:S:ms): 0:00:00.033099
+
+Linux1:isilon_capacity_calculator weeksa$ python isilon_capacity_calc_py2.py   ~/Desktop/isilon\ script\ test\ dir/ -p 3x -s 3
+You are able to read the  /Users/weeksa/Desktop/isilon script test dir/  dir
 Reading metadata...
-Read metadata for  10  DIRs and  158  files in (H:M:S:ms): 0:00:00.026398
-Metdata size for Isilon will be: 267.28 KB
+Read metadata for  11  DIRs and  161  files in (H:M:S:ms): 0:00:00.028204
+Metdata size for Isilon will be: 4 MB
 
 Calculating filesizes...
 Percent: [########################################] Done!
 
 Original data size is:  407.0 MB
-Isilon size is       :  1.19 GB
-A protection overhead of  200.39 % - percentage of additional protection data
+Isilon size is       :  1.2 GB
+A protection overhead of  201.25 % - percentage of additional protection data
 
-Calculation time (H:M:S:ms):   0:00:00.001955
-Total running time (H:M:S:ms): 0:00:00.028404
+Calculation time (H:M:S:ms):   0:00:00.002244
+Total running time (H:M:S:ms): 0:00:00.030507
+
+Linux1:isilon_capacity_calculator weeksa$ python isilon_capacity_calc_py2.py   ~/Desktop/isilon\ script\ test\ dir/ -p n+2:1 -s 3
+You are able to read the  /Users/weeksa/Desktop/isilon script test dir/  dir
+Reading metadata...
+Read metadata for  11  DIRs and  161  files in (H:M:S:ms): 0:00:00.027710
+Metdata size for Isilon will be: 4 MB
+
+Calculating filesizes...
+Percent: [########################################] Done!
+
+Original data size is:  407.0 MB
+Isilon size is       :  629.47 MB
+A protection overhead of  54.45 % - percentage of additional protection data
+
+Calculation time (H:M:S:ms):   0:00:00.002673
+Total running time (H:M:S:ms): 0:00:00.030437
 ```
 Please note that this script is **completely unsupported by Dell Technologies/EMC/Isilon** and should be considered as in a beta state/
 experimental.  Although written in good faith there are of course **no guarantees** the results will be accurate.
