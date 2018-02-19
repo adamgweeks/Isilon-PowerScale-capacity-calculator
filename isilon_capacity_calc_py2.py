@@ -225,8 +225,8 @@ for root, dirs, files in os.walk(dirname):	#go and retrieve a list of all the fi
 		filepath = os.path.join(root, filename)
 		if os.path.isfile(filepath):	# check this is a file (i.e. not a link)
 			files_to_process=files_to_process+1 # used later for progress bar
-			#filesizes.append(os.path.getsize(filepath)) # add to file size for this file to the list 
-			filesizes.append((os.stat(filepath).st_blocks * 512)) #new alternative sizing, to match disk blocks size on Isilon (and most disks/OS configs)
+			filesizes.append(os.path.getsize(filepath)) # add to file size for this file to the list 
+			#filesizes.append((os.stat(filepath).st_blocks * 512)) #new alternative sizing, to match disk blocks size on Isilon (and most disks/OS configs)
 			if verbose==True:
 				filenames.append(filename)
    
