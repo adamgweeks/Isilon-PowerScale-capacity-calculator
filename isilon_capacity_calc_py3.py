@@ -3,10 +3,10 @@
 # written by Adam.Weeks@dell.com
 # unofficial and NOT supported by Dell Technologies/EMC/Isilon!
 
-# example useage: python isilon_space_calc_py3.py /Users/user1/Documents/ -s 9 -p N+2
+# example useage: python isilon_space_calc_py2.py /Users/user1/Documents/ -s 9 -p N+2
 # see https://github.com/adamgweeks/Isilon-capacity-calculator
 #
-# for Python 3!
+# for Python 2!
 
 
 
@@ -72,6 +72,11 @@ node_pool_size=args.node_pool_size
 data_units=args.units
 verbose=args.verbose
 csv=args.csv
+total_empty_files=0
+total_small_files=0
+total_partial_files=0
+total_perfect_files=0
+total_large_files=0
 
 if csv==True:
 	verbose=True
@@ -165,7 +170,9 @@ total=0
 filesizes=[]
 filenames=[]
 total_size=0
+total_size=float(total_size)
 total_original_size=0
+total_original_size=float(total_original_size)
 t_total=0
 
 import os
@@ -176,13 +183,13 @@ import sys
 
 #check if DIR exists
 if os.path.isdir(dirname) is False:
-	print(("Error! directory:'",dirname,"' doesn't appear to exist."))
+	print("Error! directory:'",dirname,"' doesn't appear to exist.")
 	exit()
 #check if directory is readable
 if os.access(dirname, os.R_OK):
-	print(("You are able to read the ",dirname," dir"))	
+	print("You are able to read the ",dirname," dir")	
 else:
-	print(("Error! dir:",dirname," is not readable."))	
+	print("Error! dir:",dirname," is not readable.")	
 	exit()
 
 #if the node pool size is greater than the max stripe size, limit it TO the maximum stripe size
@@ -225,7 +232,7 @@ for root, dirs, files in os.walk(dirname):	#go and retrieve a list of all the fi
 		filepath = os.path.join(root, filename)
 		if os.path.isfile(filepath):	# check this is a file (i.e. not a link)
 			files_to_process=files_to_process+1 # used later for progress bar
-			filesizes.append(os.path.getsize(filepath)) # add to file size for this file to the list 
+			filesizes.append(float(os.path.getsize(filepath))) # add to file size for this file to the list 
 			#filesizes.append((os.stat(filepath).st_blocks * 512)) #new alternative sizing, to match disk blocks size on Isilon (and most disks/OS configs)
 			if verbose==True:
 				filenames.append(filename)
@@ -252,8 +259,8 @@ if odata_units=="H":
 else:
 		metadata_size=metadata_size/data_divider	
 		metadata_size=round(metadata_size,4) # (rounded to 3 decimal places for ease of reading)
-print(("Read metadata for ",dirs_to_process," DIRs and ",files_to_process," files in (H:M:S:ms):",datetime.now() - startTime)) # show how long this took and how many files we have (really just for reference) 
-print(("Metdata size for Isilon will be:",metadata_size,data_units))         
+print("Read metadata for ",dirs_to_process," DIRs and ",files_to_process," files in (H:M:S:ms):",datetime.now() - startTime) # show how long this took and how many files we have (really just for reference) 
+print("Metdata size for Isilon will be:",metadata_size,data_units)         
 i=0 #for progress bar		
 
 print("")
@@ -266,7 +273,7 @@ if verbose==True:
 	else:
 		print("")
 		print("")
-		print(("Isilon space calculator report for ",dirname,"with ", node_pool_size ," nodes using ",protection_string," protection"))
+		print("Isilon space calculator report for ",dirname,"with ", node_pool_size ," nodes using ",protection_string," protection")
 		print("")
 		print("")
 		print("Filename,Original size (KB),Isilon size(KB)")
@@ -275,14 +282,16 @@ calcTime = datetime.now() # for timing how long the processing takes
 	
 # go through each file in the list and we'll work out how much protection detail Isilon would add (for given cluster size and protection setting used)       
 for file_size in filesizes:
+	file_size=float(file_size)
 	i=i+1
 	if verbose==False: 
 		progress(files_to_process,40,i)# show progress bar
 	file_size=file_size/1024 # convert KB first
 	total_original_size=file_size+total_original_size # totting up the total size of the original files
 	osize=file_size # for verbose output
-
-	if file_size>0:
+	if file_size==0:
+		total_empty_files+=1 # increment the number of empty files
+	else :
 		remainder=0       
 	# round up to ceiling 8kb (Isilon uses an 8KB filesystem block size, so we need to round up)		
 		rounded_file_size=int(8 * round(float(file_size)/8))
@@ -296,6 +305,7 @@ for file_size in filesizes:
 		else:
 				#check if the file is 'small' (i.e. less than, or equal to 128KB), if it is small it will be mirrored
 				if rounded_file_size<=128:
+					total_small_files += 1 #increment the counter for small files
 					T_requested_protection = requested_protection + 1
 					file_size=rounded_file_size * T_requested_protection
 					remainder_size=0
@@ -319,16 +329,22 @@ for file_size in filesizes:
 
 						#if (no_stripes<=1) and (no_stripes>0): #we don't have a full stripe here, so no need to calculate the full stripes size.
 						if (no_stripes==1) and (remainder_size>0): # we have just over 1 stripe (one a bit at least!)
+																total_large_files+= 1 # increment the counter for large files
 																rounded_stripes=int(no_stripes) # round up the number of stripes by converting to an integer (we will handle the 'overspill' of writing a full stripe later)r
 																rounded=False
 																full_stripes_size=((actual_stripe_size * rounded_stripes) + (requested_protection * rounded_stripes)) * 128 # how would the stripes be written (taking into account the node pool size and protection
 						elif (no_stripes<1) and (no_stripes>0): # we have either precisely 1 stripe, or less than 1 complete stripe
+																total_partial_files+=1 # increment the number of partial files
 																no_stripes=1
 																full_stripes_size=0
 																rounded=True
 					
 					
 						else: 		# we have more than 1 stripe
+																if no_stripes==1:
+																	total_perfect_files+=1 # increment the number of perfect stripe files
+																else: 
+																	total_large_files+= 1 #increment the counter for large files
 																rounded_stripes=int(no_stripes) # round up the number of stripes by converting to an integer (we will handle the 'overspill' of writing a full stripe later)
 																rounded=False
 																full_stripes_size=((actual_stripe_size * rounded_stripes) + (requested_protection * rounded_stripes)) * 128 # how would the stripes be written (taking into account the node pool size and protection
@@ -359,9 +375,9 @@ for file_size in filesizes:
 			osize_s=osize_s.rjust(15)
 			filename=filename.ljust(50)
 			file_size_s=file_size_s.ljust(15)
-			print((filename,":",osize_s," - ",file_size_s))
+			print(filename,":",osize_s," - ",file_size_s)
 		else:
-			print((filename,",",osize_s,",",file_size_s))			
+			print(filename,",",osize_s,",",file_size_s)			
 	t_total=total_size
 	total_size=(t_total+file_size)
 	t_total=total_size
@@ -386,7 +402,7 @@ totemp=round(totemp,2)
 #show the results of all this (timings are more for reference as this could take hours/days!)
 print("")
 print("")	
-print(("Original data size is: ",totemp,data_units))
+print("Original data size is: ",totemp,data_units)
 
 if odata_units=="H":
 		output=float()
@@ -395,16 +411,27 @@ if odata_units=="H":
 		total_size=output[0]
 		data_units=output[1]
 else:	
-		total_size=float(total_size)
+		#total_size=float(total_size)
 		total_size=total_size/data_divider
 
 #total_size=total_size+metadata_size	
 total_size=round(total_size,2)
 	
-print(("Isilon size is       : ", total_size,data_units))
-print(("A protection overhead of ",diff,"% - percentage of additional protection data"))
+print("Isilon size is       : ", total_size,data_units)
+print("A protection overhead of ",diff,"% - percentage of additional protection data")
 print("")
-print(("Calculation time (H:M:S:ms):  ",datetime.now() - calcTime))  
-print(("Total running time (H:M:S:ms):",datetime.now() - startTime))  
+print("Calculation time (H:M:S:ms):  ",datetime.now() - calcTime)  
+print("Total running time (H:M:S:ms):",datetime.now() - startTime)
+print("")
+print("Breakdown")
+print("Empty files (0 bytes):",total_empty_files)
+print("Small files (128KB or less): ",total_small_files)
+if total_perfect_files>0:
+		print("Perfect stripe (exactly 1 stripe) files:",total_perfect_files)
+print("Partial files (less than one complete stripe): ",total_partial_files)
+print("Large files (more than 1 full stripe): ",total_large_files)
+print("Total :",files_to_process," files")
+
+  
 
  
