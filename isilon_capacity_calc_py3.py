@@ -450,8 +450,8 @@ print("")
 print("")
 output=human_size(block_size)
 block_size=output[0]
-data_units=output[1]	
-print("Original data size is: ",totemp,data_units," (given native block size of",block_size,data_units,").")
+mdata_units=output[1]	
+print("Original data size is: ",totemp,data_units," (given native block size of",block_size,mdata_units,").")
 
 if odata_units=="H":
 		output=float()
