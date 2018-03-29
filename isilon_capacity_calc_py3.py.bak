@@ -9,7 +9,6 @@
 # for Python 2!
 
 
-
 from datetime import datetime	# get script start time
 startTime = datetime.now()		# script timed as this could take a while!	
 
@@ -21,36 +20,37 @@ parser.add_argument("--node_pool_size","-s", help="the node pool size (number of
 parser.add_argument("--protection","-p", help="data protection level, defaults to: N+2:1",default="N+2:1",required=True)
 parser.add_argument("--units","-u", help="output data units (KB,MB,TB,PB,H), default=H (H=human/auto sizing)",default="H")
 parser.add_argument("--verbose","-v", help="show individual file size comparisson",action="store_true")
+parser.add_argument("--inode_block_size","-ibs", help="specify if the drives use 512/4096 byte blocks (effects size of inodes being used)",type=int,default=4096)
 parser.add_argument("--csv","-c", help="verbose output as CSV file",action="store_true")
 
 
 # human filesizing function
-def human_size(size_in_kb):
+def human_size(size_in_b):
 		out_size=float()
-		out_size=(size_in_kb/(1024*1024*1024*1024))
+		out_size=(size_in_b/(1024*1024*1024*1024*1024))
 		if out_size>=1:
 			#units="PB"
 			output=[out_size,'PB']
 			return(output)  
 		else:
-			out_size=(size_in_kb/(1024*1024*1024))
+			out_size=(size_in_b/(1024*1024*1024*1024))
 			if out_size>=1:
 				#units="TB"
 				output=[out_size,'TB']
 				return(output)  
 				#print "outsize is ",out_size,units
 			else:
-				out_size=(size_in_kb/(1024*1024))
+				out_size=(size_in_b/(1024*1024*1024))
 				if out_size>=1:
 					output=[out_size,'GB']
 					return(output)  
 				else:
-					out_size=(size_in_kb/(1024))
+					out_size=(size_in_b/(1024*1024))
 					if out_size>=1:
 						output=[out_size,'MB']
 						return(output)  
 					else:
-						output=[size_in_kb,'KB']
+						output=[size_in_b/1024,'KB']
 						return(output)
 					
 #progress bar function
@@ -69,6 +69,18 @@ args = parser.parse_args()
 dirname=args.directory
 protection_string=args.protection
 node_pool_size=args.node_pool_size
+ibs_size=args.inode_block_size
+if ibs_size == 4096:
+	ibs_size=8192
+elif ibs_size == 512:
+	ibs_size=512
+elif ibs_size == 8:
+	ibs_size=8192
+elif ibs_size == 5:
+	ibs_size=512
+else :
+	print "Unrecognised disk block size"
+	exit()
 data_units=args.units
 verbose=args.verbose
 csv=args.csv
@@ -85,19 +97,19 @@ if csv==True:
 data_units=data_units.upper()
 if data_units=="KB":
 	odata_units=""
-	data_divider=1
+	data_divider=1024
 elif data_units=="MB":
 	odata_units=""
-	data_divider=1024
+	data_divider=1024*1024
 elif data_units=="GB":
 	odata_units=""
-	data_divider=1024*1024
+	data_divider=1024*1024*1024
 elif data_units=="TB":
 	odata_units=""
-	data_divider=1024*1024*1024
+	data_divider=1024*1024*1024*1024
 elif data_units=="PB":
 	odata_units=""
-	data_divider=1024*1024*1024*1024
+	data_divider=1024*1024*1024*1024*1024
 elif data_units=="H":
 	odata_units="H"
 	data_divider=1                  
@@ -250,7 +262,7 @@ else:
 	dirmcount = dirmcount * (requested_protection + 1)
 	filemcount=filemcount * requested_protection # if data is mirrored we simply mirror the metadata
 
-metadata_size=(filemcount + dirmcount) * 8	
+metadata_size=(filemcount + dirmcount) * ibs_size	
 total_size=total_size + metadata_size # tally up metadata size
 if odata_units=="H":
 		output=human_size(metadata_size)
@@ -260,7 +272,7 @@ else:
 		metadata_size=metadata_size/data_divider	
 		metadata_size=round(metadata_size,4) # (rounded to 3 decimal places for ease of reading)
 print "Read metadata for ",dirs_to_process," DIRs and ",files_to_process," files in (H:M:S:ms):",datetime.now() - startTime # show how long this took and how many files we have (really just for reference) 
-print "Metdata size for Isilon will be:",metadata_size,data_units         
+print "Metdata size for Isilon will be:",metadata_size,data_units, "(with a inode size of ",ibs_size,"Bytes)"         
 i=0 #for progress bar		
 
 print ""
@@ -286,7 +298,38 @@ for file_size in filesizes:
 	i=i+1
 	if verbose==False: 
 		progress(files_to_process,40,i)# show progress bar
-	file_size=file_size/1024 # convert KB first
+	#file_size=file_size/1024 # convert KB first
+		# round up to ceiling 8kb (Isilon uses an 8KB filesystem block size, so we need to round up)
+	
+#test for rounding to 4KB blocks before writing file (like HFS+)
+	testfs=file_size
+        try:
+            block_size=os.statvfs(dirname).f_frsize	
+	except AttributeError:
+		import ctypes
+
+		sectorsPerCluster = ctypes.c_ulonglong(0)
+		bytesPerSector = ctypes.c_ulonglong(0)
+		rootPathName = ctypes.c_wchar_p(dirname)
+
+		ctypes.windll.kernel32.GetDiskFreeSpaceW(rootPathName,
+    		ctypes.pointer(sectorsPerCluster),
+    		ctypes.pointer(bytesPerSector),
+   	 		None,
+    		None,
+		)
+		spc=sectorsPerCluster.value
+		bps=bytesPerSector.value
+		block_size = spc * bps
+	
+	#block_size=8192
+		
+	file_size=int(block_size * round(float(testfs)/block_size))
+	if(file_size<testfs):
+		file_size=testfs + block_size
+		
+#end of pre-rounding test
+
 	total_original_size=file_size+total_original_size # totting up the total size of the original files
 	osize=file_size # for verbose output
 	if file_size==0:
@@ -294,9 +337,9 @@ for file_size in filesizes:
 	else :
 		remainder=0       
 	# round up to ceiling 8kb (Isilon uses an 8KB filesystem block size, so we need to round up)		
-		rounded_file_size=int(8 * round(float(file_size)/8))
+		rounded_file_size=int(8192 * round(float(file_size)/8192))
 		if(rounded_file_size<file_size):
-			rounded_file_size=rounded_file_size + 8
+			rounded_file_size=rounded_file_size + 8192
 	# if mirroring protection was requested we simply need to multiply the rounded size (no need for complex stripe calc
 		if stripe_requested==False:
 				file_size=rounded_file_size * requested_protection
@@ -304,7 +347,7 @@ for file_size in filesizes:
 	# if striping was requested we have to do a more complex calc			
 		else:
 				#check if the file is 'small' (i.e. less than, or equal to 128KB), if it is small it will be mirrored
-				if rounded_file_size<=128:
+				if rounded_file_size<=131072:
 					total_small_files += 1 #increment the counter for small files
 					T_requested_protection = requested_protection + 1
 					file_size=rounded_file_size * T_requested_protection
@@ -312,60 +355,63 @@ for file_size in filesizes:
 				else:
 
 				# as file is larger than 128KB (and we've already checked for a mirroring request), we'll have to stripe the data		
-						DU_count=float(rounded_file_size)/128 # work out how many DUs (Data Units) will be needed
+						DU_count=float(rounded_file_size)/131072 # work out how many DUs (Data Units) will be needed
 				#check if DU_count is integer (if not we have a partial DU)
 						if (float(DU_count)).is_integer():
 							overspill=0 # overspill is how much we need to remove from the end of the LAST DU, if it divides perfectly there will be no overspill to remove
 						else:
 						#we have a partial DU
 							DU_count=int(DU_count)
-							overspill=128-(rounded_file_size - (int(DU_count)*128)) # our last DU will not really be complete, so how much do we remove?  (the overspill value)
+							overspill=131072-(rounded_file_size - (int(DU_count)*131072)) # our last DU will not really be complete, so how much do we remove?  (the overspill value)
 
 
 						actual_stripe_size=node_pool_size - requested_protection # get the stripe size (for DUs) available
+						no_stripes=float(0)
 						no_stripes=DU_count/float(actual_stripe_size)# how many stripes do we need (not necessarily an integer result)
 						rounded_stripes=int(no_stripes)
-						remainder_size=rounded_file_size - ((actual_stripe_size * rounded_stripes) * 128)# data left over (from partial)
+						remainder_size=rounded_file_size - ((actual_stripe_size * rounded_stripes) * 131072)# data left over (from partial)
 
 						#if (no_stripes<=1) and (no_stripes>0): #we don't have a full stripe here, so no need to calculate the full stripes size.
 						if (no_stripes==1) and (remainder_size>0): # we have just over 1 stripe (one a bit at least!)
 																total_large_files+= 1 # increment the counter for large files
 																rounded_stripes=int(no_stripes) # round up the number of stripes by converting to an integer (we will handle the 'overspill' of writing a full stripe later)r
 																rounded=False
-																full_stripes_size=((actual_stripe_size * rounded_stripes) + (requested_protection * rounded_stripes)) * 128 # how would the stripes be written (taking into account the node pool size and protection
-						elif (no_stripes<1) and (no_stripes>0): # we have either precisely 1 stripe, or less than 1 complete stripe
+																full_stripes_size=((actual_stripe_size * rounded_stripes) + (requested_protection * rounded_stripes)) * 131072 # how would the stripes be written (taking into account the node pool size and protection
+						elif (no_stripes<1) and (no_stripes>0): # we have less than 1 complete stripe
 																total_partial_files+=1 # increment the number of partial files
 																no_stripes=1
 																full_stripes_size=0
 																rounded=True
-					
+						elif (no_stripes==1) and (overspill==0) and (remainder_size==0): # we have a perfect stripe!
+																total_perfect_files+=1 # increment the number of perfect stripe files
+																rounded=False
 					
 						else: 		# we have more than 1 stripe
-																if no_stripes==1:
-																	total_perfect_files+=1 # increment the number of perfect stripe files
-																else: 
-																	total_large_files+= 1 #increment the counter for large files
+
+																total_large_files+= 1 #increment the counter for large files
 																rounded_stripes=int(no_stripes) # round up the number of stripes by converting to an integer (we will handle the 'overspill' of writing a full stripe later)
 																rounded=False
-																full_stripes_size=((actual_stripe_size * rounded_stripes) + (requested_protection * rounded_stripes)) * 128 # how would the stripes be written (taking into account the node pool size and protection
+																full_stripes_size=((actual_stripe_size * rounded_stripes) + (requested_protection * rounded_stripes)) * 131072 # how would the stripes be written (taking into account the node pool size and protection)
 						# check for overspill
 						if(overspill>0):
 							#remainder_size=0
 							if rounded==True:
 									remainder_size=rounded_file_size
 							else:
-									remainder_size=rounded_file_size - ((actual_stripe_size * rounded_stripes) * 128)# data left over (from partial)
+									remainder_size=rounded_file_size - ((actual_stripe_size * rounded_stripes) * 131072)# data left over (from partial)
 				#calculate the 'remainder' stripe that needs to be written
 				#do we need to mirror the remainder?
-						if remainder_size<=128:
+						if (remainder_size<=131072) and (remainder_size>0):
 							T_requested_protection = requested_protection + 1
 							remainder_size=(remainder_size * T_requested_protection)
 							file_size=remainder_size + full_stripes_size
-			
-						else:
+						elif (remainder_size>131072) and (remainder_size>0):
 				#remainder is big enough to form final stripe
-							remainder_size=((remainder_size + (requested_protection * 128)))
+							remainder_size=((remainder_size + (requested_protection * 131072)))
 							file_size=remainder_size + full_stripes_size
+						else :
+				#we have a perfect stripe
+							file_size=(actual_stripe_size + requested_protection) * 131072
 			
 	if verbose==True:
 		filename=filenames[(i-1)]
@@ -401,8 +447,11 @@ totemp=round(totemp,2)
 
 #show the results of all this (timings are more for reference as this could take hours/days!)
 print ""
-print ""	
-print "Original data size is: ",totemp,data_units
+print ""
+output=human_size(block_size)
+block_size=output[0]
+data_units=output[1]	
+print "Original data size is: ",totemp,data_units," (given native block size of",block_size,data_units,")."
 
 if odata_units=="H":
 		output=float()
