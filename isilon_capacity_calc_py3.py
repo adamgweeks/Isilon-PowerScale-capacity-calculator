@@ -60,8 +60,13 @@ def progress(end_val, bar_length,prog):
 		spaces = ' ' * (bar_length - len(hashes))
 		if(prog==end_val):
 				sys.stdout.write("\rPercent: [{0}] Done!".format(hashes + spaces, int(round(percent * 100))))
+				sys.stdout.write("({} of {} files)".format(prog,end_val))
+
 		else:
 				sys.stdout.write("\rPercent: [{0}] {1}%".format(hashes + spaces, int(round(percent * 100))))
+				sys.stdout.write("({} of {} files)".format(prog,end_val))
+
+
 		sys.stdout.flush()
 	
 #setup the vars needed for calculations        
@@ -89,6 +94,7 @@ total_small_files=0
 total_partial_files=0
 total_perfect_files=0
 total_large_files=0
+block_size=0
 
 if csv==True:
 	verbose=True
@@ -149,6 +155,41 @@ elif protection_string=="n+3:11":
 	stripe_requested=True
 	node_pool_size=(node_pool_size * 2)
 elif protection_string=="n+4:2":
+	requested_protection=4
+	stripe_requested=True
+	node_pool_size=(node_pool_size * 2)                       
+elif protection_string=="2x":
+	requested_protection=2
+	stripe_requested=False
+elif protection_string=="n+1n":
+	requested_protection=1
+	stripe_requested=True
+elif protection_string=="n+2n":
+	requested_protection=2
+	stripe_requested=True
+elif protection_string=="n+3n":
+	requested_protection=3
+	stripe_requested=True
+elif protection_string=="n+4n":
+	requested_protection=4
+	stripe_requested=True
+elif protection_string=="n+2d:1n":
+	requested_protection=2
+	stripe_requested=True
+	node_pool_size=(node_pool_size * 2) 
+elif protection_string=="n+3d:1n":
+	requested_protection=3
+	stripe_requested=True
+	node_pool_size=(node_pool_size * 3)
+elif protection_string=="n+4d:1n":
+	requested_protection=4
+	stripe_requested=True
+	node_pool_size=(node_pool_size * 4)
+elif protection_string=="n+3d:1d1n":
+	requested_protection=3
+	stripe_requested=True
+	node_pool_size=(node_pool_size * 2)
+elif protection_string=="n+4d:2n":
 	requested_protection=4
 	stripe_requested=True
 	node_pool_size=(node_pool_size * 2)                       
@@ -294,39 +335,48 @@ calcTime = datetime.now() # for timing how long the processing takes
 	
 # go through each file in the list and we'll work out how much protection detail Isilon would add (for given cluster size and protection setting used)       
 for file_size in filesizes:
-	file_size=float(file_size)
+	#file_size=float(file_size)
 	i=i+1
 	if verbose==False: 
 		progress(files_to_process,40,i)# show progress bar
 	#file_size=file_size/1024 # convert KB first
 		# round up to ceiling 8kb (Isilon uses an 8KB filesystem block size, so we need to round up)
 	
-#test for rounding to 4KB blocks before writing file (like HFS+)
-	testfs=file_size
-	try:
-		block_size=os.statvfs(dirname).f_frsize	
-	except AttributeError:
-		import ctypes
+	if (block_size==0):
+		testfs=file_size
+		try:
+            	# Open a file
+			fd = os.open( "test.py", os.O_RDWR|os.O_CREAT )
+				# Now get  the touple
+			block_size = int(os.fstatvfs(fd).f_frsize)
+				# Close opened file
+			os.close( fd)	
+            		#try to find the native FS block size using Unix stats command (will fail in Windows based OS)
+		except AttributeError:  # if above command fails, let's try finding the native FS block size using Windows native DLL instead
+			import ctypes
 
-		sectorsPerCluster = ctypes.c_ulonglong(0)
-		bytesPerSector = ctypes.c_ulonglong(0)
-		rootPathName = ctypes.c_wchar_p(dirname)
+			sectorsPerCluster = ctypes.c_ulonglong(0)
+			bytesPerSector = ctypes.c_ulonglong(0)
+			rootPathName = ctypes.c_wchar_p(dirname)
 
-		ctypes.windll.kernel32.GetDiskFreeSpaceW(rootPathName,
-    		ctypes.pointer(sectorsPerCluster),
-    		ctypes.pointer(bytesPerSector),
-   	 		None,
-    		None,
-		)
-		spc=sectorsPerCluster.value
-		bps=bytesPerSector.value
-		block_size = spc * bps
+			ctypes.windll.kernel32.GetDiskFreeSpaceW(rootPathName,
+    			ctypes.pointer(sectorsPerCluster),
+    			ctypes.pointer(bytesPerSector),
+   	 			None,
+    			None,
+			)
+			spc=sectorsPerCluster.value
+			bps=bytesPerSector.value
+			block_size = spc * bps
 	
-	#block_size=8192
-		
-	file_size=int(block_size * round(float(testfs)/block_size))
-	if(file_size<testfs):
-		file_size=testfs + block_size
+	#Round all the filesize calculations (for the original data size) to the blocksize of the native filesystem (of the system this script is running on)
+	#block_size=8192 # just for testing (to match oneFS block size)
+	testfs=file_size
+	if (file_size>0):	
+		file_size=int(block_size * round(float(testfs)/block_size))
+		if(file_size<testfs):
+			file_size=testfs + block_size
+	
 		
 #end of pre-rounding test
 
