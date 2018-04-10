@@ -20,7 +20,7 @@ parser.add_argument("--node_pool_size","-s", help="the node pool size (number of
 parser.add_argument("--protection","-p", help="data protection level, defaults to: N+2:1",default="N+2:1",required=True)
 parser.add_argument("--units","-u", help="output data units (KB,MB,TB,PB,H), default=H (H=human/auto sizing)",default="H")
 parser.add_argument("--verbose","-v", help="show individual file size comparisson",action="store_true")
-parser.add_argument("--inode_block_size","-ibs", help="specify if the drives use 512/4096 byte blocks (effects size of inodes being used)",type=int,default=4096)
+parser.add_argument("--inode_block_size","-ibs", help="specify if the drives use 512/4096 byte blocks (effects size of inodes being used)",type=int,default=8192)
 parser.add_argument("--csv","-c", help="verbose output as CSV file",action="store_true")
 
 
@@ -75,7 +75,7 @@ dirname=args.directory
 protection_string=args.protection
 node_pool_size=args.node_pool_size
 ibs_size=args.inode_block_size
-if ibs_size == 4096:
+if ibs_size == 8192:
 	ibs_size=8192
 elif ibs_size == 512:
 	ibs_size=512
@@ -83,6 +83,8 @@ elif ibs_size == 8:
 	ibs_size=8192
 elif ibs_size == 5:
 	ibs_size=512
+elif ibs_size == 4096:
+	ibs_size=8192
 else :
 	print "Unrecognised disk block size"
 	exit()
@@ -95,6 +97,14 @@ total_partial_files=0
 total_perfect_files=0
 total_large_files=0
 block_size=0
+total_filesize_small_isilon=0
+total_filesize_partial_isilon=0
+total_filesize_perfect_isilon=0
+total_filesize_large_isilon=0
+total_filesize_small_orig=0
+total_filesize_partial_orig=0
+total_filesize_perfect_orig=0
+total_filesize_large_orig=0
 
 if csv==True:
 	verbose=True
@@ -313,7 +323,9 @@ else:
 		metadata_size=metadata_size/data_divider	
 		metadata_size=round(metadata_size,4) # (rounded to 3 decimal places for ease of reading)
 print "Read metadata for ",dirs_to_process," DIRs and ",files_to_process," files in (H:M:S:ms):",datetime.now() - startTime # show how long this took and how many files we have (really just for reference) 
-print "Metdata size for Isilon will be:",metadata_size,data_units, "(with a inode size of ",ibs_size,"Bytes)"         
+output=human_size(ibs_size)
+ibs_h_size=output[0]
+ibs_h_units=output[1]
 i=0 #for progress bar		
 
 print ""
@@ -335,6 +347,9 @@ calcTime = datetime.now() # for timing how long the processing takes
 	
 # go through each file in the list and we'll work out how much protection detail Isilon would add (for given cluster size and protection setting used)       
 for file_size in filesizes:
+
+	file_type=""
+	
 	i=i+1
 	if verbose==False: 
 		progress(files_to_process,40,i)# show progress bar
@@ -396,6 +411,7 @@ for file_size in filesizes:
 					T_requested_protection = requested_protection + 1
 					file_size=rounded_file_size * T_requested_protection
 					remainder_size=0
+					file_type="small"
 				else:
 
 				# as file is larger than 128KB (and we've already checked for a mirroring request), we'll have to stripe the data		
@@ -418,21 +434,25 @@ for file_size in filesizes:
 						#if (no_stripes<=1) and (no_stripes>0): #we don't have a full stripe here, so no need to calculate the full stripes size.
 						if (no_stripes==1) and (remainder_size>0): # we have just over 1 stripe (one a bit at least!)
 																total_large_files+= 1 # increment the counter for large files
+																file_type="large"
 																rounded_stripes=int(no_stripes) # round up the number of stripes by converting to an integer (we will handle the 'overspill' of writing a full stripe later)r
 																rounded=False
 																full_stripes_size=((actual_stripe_size * rounded_stripes) + (requested_protection * rounded_stripes)) * 131072 # how would the stripes be written (taking into account the node pool size and protection
 						elif (no_stripes<1) and (no_stripes>0): # we have less than 1 complete stripe
 																total_partial_files+=1 # increment the number of partial files
+																file_type="partial"
 																no_stripes=1
 																full_stripes_size=0
 																rounded=True
 						elif (no_stripes==1) and (overspill==0) and (remainder_size==0): # we have a perfect stripe!
 																total_perfect_files+=1 # increment the number of perfect stripe files
+																file_type="perfect"
 																rounded=False
 					
 						else: 		# we have more than 1 stripe
 
 																total_large_files+= 1 #increment the counter for large files
+																file_type="large"
 																rounded_stripes=int(no_stripes) # round up the number of stripes by converting to an integer (we will handle the 'overspill' of writing a full stripe later)
 																rounded=False
 																full_stripes_size=((actual_stripe_size * rounded_stripes) + (requested_protection * rounded_stripes)) * 131072 # how would the stripes be written (taking into account the node pool size and protection)
@@ -471,6 +491,19 @@ for file_size in filesizes:
 	t_total=total_size
 	total_size=(t_total+file_size)
 	t_total=total_size
+	if file_type=="small" :
+		total_filesize_small_orig=total_filesize_small_orig + osize
+		total_filesize_small_isilon=total_filesize_small_isilon + file_size
+	elif file_type=="partial" :
+		total_filesize_partial_orig=total_filesize_partial_orig + osize
+		total_filesize_partial_isilon=total_filesize_partial_isilon + file_size
+	elif file_type=="perfect" :
+		total_filesize_perfect_orig=total_filesize_perfect_orig + osize
+		total_filesize_perfect_isilon=total_filesize_perfect_isilon + file_size
+	elif file_type=="large" :
+		total_filesize_large_orig=total_filesize_large_orig + osize
+		total_filesize_large_isilon=total_filesize_large_isilon + file_size
+
 
 if i<=0:
 	print "Error! Directory is empty, nothing to show!"
@@ -514,16 +547,41 @@ print "Isilon size is       : ", total_size,data_units
 print "A protection overhead of ",diff,"% - percentage of additional protection data"
 print ""
 print "Calculation time (H:M:S:ms):  ",datetime.now() - calcTime  
-print "Total running time (H:M:S:ms):",datetime.now() - startTime
 print ""
-print "Breakdown"
+print "Data breakdown:"
+print "Metdata size for Isilon will be:",metadata_size,data_units, "(with an inode size of ",ibs_h_size,ibs_h_units,")"         
 print "Empty files (0 bytes):",total_empty_files
-print "Small files (128KB or less): ",total_small_files
+output=human_size(total_filesize_small_isilon)
+total_size_isilon=round(float(output[0]),2)
+data_units_isilon=output[1]
+output=human_size(total_filesize_small_orig)
+total_size_orig=round(float(output[0]),2)
+data_units_orig=output[1]
+print "Small files (128KB or less): ",total_small_files,"size orig:",total_size_orig,data_units_orig,"Isilon size:",total_size_isilon,data_units_isilon
 if total_perfect_files>0:
-		print "Perfect stripe (exactly 1 stripe) files:",total_perfect_files
-print "Partial files (less than one complete stripe): ",total_partial_files
-print "Large files (more than 1 full stripe): ",total_large_files
+		output=human_size(total_filesize_perfect_isilon)
+		total_size_isilon=round(float(output[0]),2)
+		data_units_isilon=output[1]
+		output=human_size(total_filesize_perfect_orig)
+		total_size_orig=round(float(output[0]),2)
+		data_units_orig=output[1]
+		print "Perfect stripe (exactly 1 stripe) files:",total_perfect_files,"size orig:",total_size_orig,data_units_orig,"Isilon size:",total_size_isilon,data_units_isilon
+output=human_size(total_filesize_partial_isilon)
+total_size_isilon=round(float(output[0]),2)
+data_units_isilon=output[1]
+output=human_size(total_filesize_partial_orig)
+total_size_orig=round(float(output[0]),2)
+data_units_orig=output[1]
+print "Partial files (less than one complete stripe): ",total_partial_files,"size orig:",total_size_orig,data_units_orig,"Isilon size:",total_size_isilon,data_units_isilon
+output=human_size(total_filesize_large_isilon)
+total_size_isilon=round(float(output[0]),2)
+data_units_isilon=output[1]
+output=human_size(total_filesize_large_orig)
+total_size_orig=round(float(output[0]),2)
+data_units_orig=output[1]
+print "Large files (more than 1 full stripe): ",total_large_files,"size orig:",total_size_orig,data_units_orig,"Isilon size:",total_size_isilon,data_units_isilon
 print "Total :",files_to_process," files"
+print "Total running time (H:M:S:ms):",datetime.now() - startTime
 
   
 
