@@ -20,7 +20,7 @@ parser.add_argument("--node_pool_size","-s", help="the node pool size (number of
 parser.add_argument("--protection","-p", help="data protection level, defaults to: N+2:1",default="N+2:1",required=True)
 parser.add_argument("--units","-u", help="output data units (KB,MB,TB,PB,H), default=H (H=human/auto sizing)",default="H")
 parser.add_argument("--verbose","-v", help="show individual file size comparisson",action="store_true")
-parser.add_argument("--inode_block_size","-ibs", help="specify if the drives use 512/4096 byte blocks (effects size of inodes being used)",type=int,default=8192)
+parser.add_argument("--metadata_stuffer_size","-mss", help="specify the estimated additional metadata overhead (ADS etc)",type=int,default=3584)
 parser.add_argument("--csv","-c", help="verbose output as CSV file",action="store_true")
 
 
@@ -74,20 +74,7 @@ args = parser.parse_args()
 dirname=args.directory
 protection_string=args.protection
 node_pool_size=args.node_pool_size
-ibs_size=args.inode_block_size
-if ibs_size == 8192:
-	ibs_size=8192
-elif ibs_size == 512:
-	ibs_size=512
-elif ibs_size == 8:
-	ibs_size=8192
-elif ibs_size == 5:
-	ibs_size=512
-elif ibs_size == 4096:
-	ibs_size=8192
-else :
-	print("Unrecognised disk block size")
-	exit()
+meta_stuffer=args.metadata_stuffer_size
 data_units=args.units
 verbose=args.verbose
 csv=args.csv
@@ -105,6 +92,8 @@ total_filesize_small_orig=0
 total_filesize_partial_orig=0
 total_filesize_perfect_orig=0
 total_filesize_large_orig=0
+mbig_files=0
+msmall_files=0
 
 if csv==True:
 	verbose=True
@@ -261,7 +250,8 @@ if (node_pool_size - requested_protection)>16:
 
 #check striping will work with the node pool size given    
 if stripe_requested==True:    
-	valid_min_size=(requested_protection+1)+requested_protection #could have used easier logic (2 x RP + 1) but wanted to match more to the human logic used (Must be enough nodes for more DUs than FECs).
+	#valid_min_size=(requested_protection+1)+requested_protection #could have used easier logic (2 x RP + 1) but wanted to match more to the human logic used (Must be enough nodes for more DUs than FECs).
+	valid_min_size=requested_protection*2 #Now the protection only needs to be equal DUs to FECs (in newer versions of OneFS, I believe it's 7.1 and higher)
 	if node_pool_size<valid_min_size:
 		print("Node pool is too small for requested protection to work!")
 		exit()
@@ -295,7 +285,12 @@ for root, dirs, files in os.walk(dirname):	#go and retrieve a list of all the fi
 		filepath = os.path.join(root, filename)
 		if os.path.isfile(filepath):	# check this is a file (i.e. not a link)
 			files_to_process=files_to_process+1 # used later for progress bar
-			filesizes.append(float(os.path.getsize(filepath))) # add to file size for this file to the list 
+			file_size=os.path.getsize(filepath)
+			filesizes.append(file_size) # add to file size for this file to the list
+			if(file_size>10485760):
+				mbig_files=mbig_files+1 # if the file is over 10MB it will get an 8KB inode (rule of thumb from https://community.emc.com/thread/178281?start=15&tstart=0) 
+			else:
+				msmall_files=msmall_files+1
 			#filesizes.append((os.stat(filepath).st_blocks * 512)) #new alternative sizing, to match disk blocks size on Isilon (and most disks/OS configs)
 			if verbose==True:
 				filenames.append(filename)
@@ -305,15 +300,23 @@ sys.stdout.flush()
 
 # change to numbers to process (dirs+1) files as is:
 dirmcount = dirs_to_process
-filemcount = files_to_process
+#filemcount = files_to_process
+
 if stripe_requested:
 	dirmcount = dirmcount * (requested_protection + 2) # DIRs get an extra inode mirror by default
-	filemcount=filemcount * (requested_protection + 1) # metadata is always mirrored, but we have to mirror again if it's striped (to match the striping protection level)
+	mbig_files=mbig_files * (requested_protection + 1) # metadata is always mirrored, but we have to mirror again if it's striped (to match the striping protection level)
+	msmall_files=msmall_files * (requested_protection + 1) # metadata is always mirrored, but we have to mirror again if it's striped (to match the striping protection level)
+
 else:
 	dirmcount = dirmcount * (requested_protection + 1)
-	filemcount=filemcount * requested_protection # if data is mirrored we simply mirror the metadata
+	mbig_files=mbig_files * requested_protection # if data is mirrored we simply mirror the metadata
+	msmall_files=msmall_files * requested_protection # if data is mirrored we simply mirror the metadata
 
-metadata_size=(filemcount + dirmcount) * ibs_size	
+metadata_size=(dirmcount * 8192)+(msmall_files * 512)+(mbig_files * 8192)+(meta_stuffer*(msmall_files+mbig_files+dirmcount))
+
+#print "got msize:",metadata_size
+#exit()
+#metadata_size=(filemcount + dirmcount) * ibs_size	
 total_size=total_size + metadata_size # tally up metadata size
 if odata_units=="H":
 		output=human_size(metadata_size)
@@ -323,9 +326,9 @@ else:
 		metadata_size=metadata_size/data_divider	
 		metadata_size=round(metadata_size,4) # (rounded to 3 decimal places for ease of reading)
 print("Read metadata for ",dirs_to_process," DIRs and ",files_to_process," files in (H:M:S:ms):",datetime.now() - startTime) # show how long this took and how many files we have (really just for reference) 
-output=human_size(ibs_size)
-ibs_h_size=output[0]
-ibs_h_units=output[1]
+output=human_size(meta_stuffer)
+mss_h_size=output[0]
+mss_h_units=output[1]
 i=0 #for progress bar		
 
 print("")
@@ -479,8 +482,8 @@ for file_size in filesizes:
 			
 	if verbose==True:
 		filename=filenames[(i-1)]
-		osize_s=str((osize))
-		file_size_s=str(file_size)
+		osize_s=str(((osize/1024)))
+		file_size_s=str((file_size/1024))
 		if csv==False:
 			osize_s=osize_s.rjust(15)
 			filename=filename.ljust(50)
@@ -549,7 +552,7 @@ print("")
 print("Calculation time (H:M:S:ms):  ",datetime.now() - calcTime)  
 print("")
 print("Data breakdown:")
-print("Metdata size for Isilon will be:",metadata_size,data_units, "(with an inode size of ",ibs_h_size,ibs_h_units,")")         
+print("Metdata size for Isilon will be:",metadata_size,data_units,"(with a metadata stuffer size of ",mss_h_size,mss_h_units,"per file)")     
 print("Empty files (0 bytes):",total_empty_files)
 output=human_size(total_filesize_small_isilon)
 total_size_isilon=round(float(output[0]),2)
