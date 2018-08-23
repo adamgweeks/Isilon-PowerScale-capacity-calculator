@@ -1,5 +1,8 @@
 # Isilon Capacity calculator
 
+# NOW with GEN 6 Node Pool Support!
+Gen 6 forms Disk Pools (which OneFS uses to create failure domains and can restrict stripe widths) differently from previous generations of nodes.  The calculator now has the --gen6 option to adjust the stripe width accordingly!  for more info see: [Isilon Additional Info](http://isilon-additional.info).
+
 Isilon has a unique approach to data protection protecting individual files, rather than protecting complete disks (as in RAID).
 
 This file level protection allows for great flexibility when storing large quantities of data but has the drawback of being tough
@@ -11,6 +14,7 @@ and therefore the raw capacity needed;
 * What is the size of the node pool? (group of identical nodes)
 * how big is each individual file?
 * How many files/directories are there? (each needs metadata)
+* Are these GEN 6 or previous in the Node Pool?
 
 Because the files are processed individually we'd need to use this information to calculate the resulting size of each file.
 
