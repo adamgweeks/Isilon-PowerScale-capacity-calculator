@@ -12,6 +12,8 @@
 from datetime import datetime	# get script start time
 startTime = datetime.now()		# script timed as this could take a while!	
 
+import math
+
 #take in cmd line arguments
 import argparse
 parser = argparse.ArgumentParser()
@@ -22,6 +24,8 @@ parser.add_argument("--units","-u", help="output data units (KB,MB,TB,PB,H), def
 parser.add_argument("--verbose","-v", help="show individual file size comparisson",action="store_true")
 parser.add_argument("--metadata_stuffer_size","-mss", help="specify the estimated additional metadata overhead (ADS etc)",type=int,default=3584)
 parser.add_argument("--csv","-c", help="verbose output as CSV file",action="store_true")
+parser.add_argument("--gen6","-g6", help="GEN 6 mode",action="store_true")
+
 
 
 # human filesizing function
@@ -78,6 +82,7 @@ meta_stuffer=args.metadata_stuffer_size
 data_units=args.units
 verbose=args.verbose
 csv=args.csv
+gen6=args.gen6
 total_empty_files=0
 total_small_files=0
 total_partial_files=0
@@ -122,6 +127,21 @@ else :
 	print("Data units size not recognised")
 	exit()
 
+if gen6==True: #GEN 6 uses a smaller 10 node ideal disk pool size, so has a tendancy to restrict the stripe width more than previous generations
+#see http://isilon-additonal.info - Disk Pools for more info.
+
+#check for even number of nodes and that we have at least 4!
+	if node_pool_size<4:
+		print("Error! Minumum of 4 nodes required for GEN 6 clusters!")	
+		exit()
+	if node_pool_size % 2 != 0:
+		print("Error! Node pool must have an even number of nodes in GEN 6 clusters!")	
+		exit()
+	if node_pool_size>20:
+		pool_count=math.floor(node_pool_size/10)#how many disk pools will we have?
+		rounded=node_pool_size-(pool_count*10)#is there a leftover from dividing into 10 node disk pools?
+		node_pool_size=rounded+10
+	#print "disk pool size:", node_pool_size
 
 #translate requested protection string into meaning for script
 protection_string=protection_string.lower()
