@@ -205,5 +205,5 @@ Please note that this script is **completely unsupported by Dell Technologies/EM
 experimental.  Although written in good faith there are of course **no guarantees** the results will be accurate.
 
 If you discover any issues, have any feature suggestions please contact me at 
-Adam.Weeks@dell.com or post a comment to [Issues](https://github.com/adamgweeks/Isilon-capacity-calculator/issues)
+tweeksy@gmail.com or post a comment to [Issues](https://github.com/adamgweeks/Isilon-capacity-calculator/issues)
   
