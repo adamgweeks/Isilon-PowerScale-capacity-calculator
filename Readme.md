@@ -1,4 +1,5 @@
-# Isilon/Powerscale Capacity calculator
+# Isilon/PowerScale Capacity calculator
+(note PowerScale is the re-branding of Isilon in 2020 for naming consistency across Dell products)
 
 # NOW with GEN 6 Node Pool Support!
 Gen 6 forms Disk Pools (which OneFS uses to create failure domains and can restrict stripe widths) differently from previous generations of nodes.  The calculator now has the --gen6 option to adjust the stripe width accordingly!  for more info see: [Isilon Additional Info](http://isilon-additional.info).
